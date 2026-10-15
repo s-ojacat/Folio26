@@ -1,0 +1,278 @@
+import { startHero } from './hero.js';
+
+const canvas = document.querySelector('.hero__gl');
+const hero = document.querySelector('.hero');
+const topBar = document.querySelector('.bar--top');
+
+/* ───────── Text scramble for mono labels ───────── */
+const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*/<>';
+function scramble(el, duration = 650) {
+  const final = el.dataset.text ?? (el.dataset.text = el.textContent);
+  const start = performance.now();
+  cancelAnimationFrame(el._raf);
+  const tick = (now) => {
+    const p = Math.min(1, (now - start) / duration);
+    const reveal = Math.floor(p * final.length);
+    let out = '';
+    for (let i = 0; i < final.length; i++) {
+      const c = final[i];
+      out += i < reveal || c === ' ' || c === '.' || c === '@' || c === ':'
+        ? c
+        : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+    }
+    el.textContent = out;
+    if (p < 1) el._raf = requestAnimationFrame(tick);
+  };
+  el._raf = requestAnimationFrame(tick);
+}
+const scrambleEls = [...document.querySelectorAll('[data-scramble]')];
+scrambleEls.forEach((el) => {
+  el.dataset.text = el.textContent;
+  el.addEventListener('mouseenter', () => scramble(el, 420));
+});
+
+/* ───────── In-page links: one click, smooth glide ─────────
+   The browser's own smooth scroll (CSS scroll-behavior) was getting cancelled on the first
+   click, so links needed two. This drives the scroll directly instead: distance-based
+   duration, ease-in-out (it's on-screen movement), lands just under the fixed nav, and
+   hands control back the moment the user wheels, touches or presses a key. */
+{
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  let anim = null;
+  const cancel = () => { if (anim) { cancelAnimationFrame(anim); anim = null; } };
+  ['wheel', 'touchstart', 'keydown'].forEach((t) => addEventListener(t, cancel, { passive: true }));
+
+  const glideTo = (y) => {
+    cancel();
+    const start = scrollY, dist = y - start;
+    if (reduce || Math.abs(dist) < 2) { window.scrollTo(0, y); return; }
+    const dur = Math.min(1200, Math.max(500, Math.abs(dist) * 0.35));
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / dur);
+      window.scrollTo(0, start + dist * easeInOut(p));
+      anim = p < 1 ? requestAnimationFrame(step) : null;
+    };
+    anim = requestAnimationFrame(step);
+  };
+
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const id = a.getAttribute('href').slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (!target) return;
+    e.preventDefault();
+    const navH = document.querySelector('.bar--top')?.offsetHeight || 0;
+    const y = id === 'top' ? 0 : target.getBoundingClientRect().top + scrollY - navH;
+    glideTo(Math.max(0, y));
+    history.pushState(null, '', `#${id}`);
+  });
+}
+
+/* ───────── Live Bangalore clock ───────── */
+const clockEl = document.querySelector('.clock');
+const timeFmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+function tickClock() {
+  clockEl.dataset.text = `Bangalore · ${timeFmt.format(new Date())} IST`;
+  if (!clockEl._raf) clockEl.textContent = clockEl.dataset.text;
+}
+tickClock();
+setInterval(tickClock, 15000);
+
+/* ───────── Pointer, shared with the hero scene ───────── */
+const pointer = { x: 0, y: 0, nx: 0, ny: 0, active: false };
+hero.addEventListener('pointermove', (e) => {
+  const r = hero.getBoundingClientRect();
+  pointer.x = e.clientX - r.left;
+  pointer.y = e.clientY - r.top;
+  pointer.nx = (pointer.x / r.width) * 2 - 1;
+  pointer.ny = -(pointer.y / r.height) * 2 + 1;
+  pointer.active = true;
+});
+hero.addEventListener('pointerleave', () => { pointer.active = false; });
+
+/* ───────── Hero: photo + glass "hello" + fluid (see hero.js) ───────── */
+startHero({
+  canvas, hero, pointer,
+  onReady() {
+    hero.classList.add('is-ready');
+    document.body.classList.add('is-ready');
+    scrambleEls.filter((el) => hero.contains(el) || topBar.contains(el))
+      .forEach((el, i) => setTimeout(() => scramble(el, 700), 400 + i * 40));
+  },
+});
+
+/* ───────── Selected work: hover reveal, as on pxpush.com/journal ─────────
+   Each row owns a card (built from its <template>). While hovered it is moved every frame:
+     x = −2vw + (|mouseX − rowLeft| − cardW/2) / 5     → stays in the first column, drifts a little
+     y = |mouseY − rowTop| − cardH/2                   → centred on the cursor's height
+     rotation  = horizontal mouse speed (0–100px/frame) mapped onto ±60° over 0–175, its sign
+                 set by the direction of travel and whether the row is in the top or bottom half
+     brightness = speed mapped 1 → 8
+   all eased toward their targets by 8% a frame (the wobble). The values are shared between
+   rows, so the motion carries over as the cursor crosses from one row to the next. */
+if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mouse = { x: 0, y: 0 };
+  let prev = { x: 0, y: 0 };
+  addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  const lerp = (a, b, n) => a + (b - a) * n;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const map = (v, a, b, c, d) => c + ((v - a) * (d - c)) / (b - a);
+  const anim = { tx: 0, ty: 0, rot: 0, bri: 1 };
+
+  document.querySelectorAll('.wl-row').forEach((row) => {
+    const tpl = row.querySelector('template.wl-cover');
+    if (!tpl) return;
+    const reveal = document.createElement('div');
+    reveal.className = 'hover-reveal';
+    reveal.setAttribute('aria-hidden', 'true');
+    reveal.innerHTML = '<div class="hover-reveal__inner"><div class="hover-reveal__img"></div></div>';
+    reveal.querySelector('.hover-reveal__img').appendChild(tpl.content.cloneNode(true));
+    row.appendChild(reveal);
+
+    let raf = null, first = true, area = 'down';
+    const render = () => {
+      const b = row.getBoundingClientRect();
+      const rw = reveal.offsetWidth, rh = reveal.offsetHeight;
+      if (first) area = b.top + b.height / 2 <= innerHeight / 2 ? 'up' : 'down';
+      const dx = mouse.x - prev.x;
+      const speed = clamp(Math.abs(dx), 0, 100);
+      prev = { x: mouse.x, y: mouse.y };
+      const tx = -innerWidth * 0.02 + (Math.abs(mouse.x - b.left) - rw / 2) / 5;
+      const ty = Math.abs(mouse.y - b.top) - rh / 2;
+      const swing = dx < 0 ? (area === 'up' ? 60 : -60) : (area === 'up' ? -60 : 60);
+      const rot = first || still ? 0 : map(speed, 0, 175, 0, swing);
+      const bri = first || still ? 1 : map(speed, 0, 100, 1, 8);
+      if (first) { Object.assign(anim, { tx, ty, rot, bri }); first = false; }
+      else {
+        anim.tx = lerp(anim.tx, tx, 0.08); anim.ty = lerp(anim.ty, ty, 0.08);
+        anim.rot = lerp(anim.rot, rot, 0.08); anim.bri = lerp(anim.bri, bri, 0.08);
+      }
+      reveal.style.transform = `translate(${anim.tx.toFixed(2)}px, ${anim.ty.toFixed(2)}px) rotate(${anim.rot.toFixed(2)}deg)`;
+      reveal.style.filter = `brightness(${anim.bri.toFixed(3)})`;
+      raf = requestAnimationFrame(render);
+    };
+    const enter = () => {
+      first = true; prev = { x: mouse.x, y: mouse.y };
+      row.classList.add('is-hover');
+      reveal.classList.add('is-on');
+      if (!raf) raf = requestAnimationFrame(render);
+    };
+    const leave = () => {
+      row.classList.remove('is-hover');
+      reveal.classList.remove('is-on');
+      cancelAnimationFrame(raf); raf = null;
+    };
+    row.addEventListener('mouseenter', enter);
+    row.addEventListener('mouseleave', leave);
+    row.addEventListener('click', leave);
+  });
+}
+
+// scramble labels in the work section the first time they scroll into view
+const revealIO = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (!e.isIntersecting) return;
+    scramble(e.target, 650);
+    revealIO.unobserve(e.target);
+  });
+}, { threshold: 0.6 });
+document.querySelectorAll('.work [data-scramble]').forEach((el) => revealIO.observe(el));
+
+/* ───────── About: collage layers drift apart a little with the pointer ───────── */
+const collage = document.querySelector('.about__collage');
+if (collage && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const media = collage.closest('.about__media');
+  media.addEventListener('pointermove', (e) => {
+    const r = collage.getBoundingClientRect();
+    collage.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
+    collage.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
+  });
+  media.addEventListener('pointerleave', () => { collage.style.setProperty('--mx', 0); collage.style.setProperty('--my', 0); });
+}
+
+/* ───────── About: the portrait grows and turns with the scroll ─────────
+   Two phases, both tied 1:1 to the scroll (no easing):
+   1. as the section rises (one viewport of scroll, like the old site):
+      scale 0.7 → 1.05, rotation −12° → −2°
+   2. from there until Selected Work arrives (its top at mid-screen):
+      keeps growing to ~1.2 and slowly turns on to +6°
+   On narrow screens the text sits under the photo, so phase 2 grows less. */
+const aboutMedia = document.querySelector('.about__media');
+if (aboutMedia && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const aboutSec = aboutMedia.closest('.about');
+  const workSec = document.querySelector('.work');
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  let queued = false;
+  const update = () => {
+    queued = false;
+    const vh = innerHeight;
+    const aboutTop = aboutSec.getBoundingClientRect().top;
+    const p1 = clamp01((vh * 1.05 - aboutTop) / vh);
+    // phase 2 runs from where phase 1 ends (about top at 5% of the screen) until the work
+    // section's top reaches mid-screen
+    const workTop = workSec.getBoundingClientRect().top;
+    const span = Math.max(1, (workTop - aboutTop) + vh * 0.05 - vh * 0.5);
+    const p2 = clamp01((vh * 0.05 - aboutTop) / span);
+    const extra = innerWidth > 900 ? 0.15 : 0.06;
+    aboutMedia.style.setProperty('--grow', (0.7 + 0.35 * p1 + extra * p2).toFixed(4));
+    aboutMedia.style.setProperty('--tilt', `${(-12 + 10 * p1 + 8 * p2).toFixed(3)}deg`);
+  };
+  addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', update);
+  update();
+}
+
+/* ───────── About: sticker-style jitter on the collage layers ─────────
+   Like a stop-motion "boil": each layer flips between two tilts about ±0.4° apart with a
+   little noise, ~4 frames a second, each on its own beat. Only runs while on screen. */
+if (collage && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const layers = [...collage.querySelectorAll('.layer')].map((el, i) => ({ el, flip: i % 2 === 0, base: [0, 0.3, -0.25][i] ?? 0 }));
+  let timer = null;
+  const tick = () => {
+    for (const l of layers) {
+      if (Math.random() < 0.15) continue;   // the odd held frame keeps it from feeling mechanical
+      l.flip = !l.flip;
+      const deg = l.base + (l.flip ? 0.4 : -0.4) + (Math.random() - 0.5) * 0.2;
+      l.el.style.setProperty('--jit', `${deg.toFixed(2)}deg`);
+    }
+  };
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting && !timer) timer = setInterval(tick, 230);
+    else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; }
+  }).observe(collage);
+}
+
+/* ───────── About: reveal once on the way in ───────── */
+const about = document.querySelector('.about');
+new IntersectionObserver(([e], io) => {
+  if (!e.isIntersecting) return;
+  about.classList.add('is-in');
+  io.disconnect();
+}, { threshold: 0.25 }).observe(about);
+
+/* ───────── Contact: headline rises in once, email copies to the clipboard ───────── */
+const contact = document.querySelector('.contact');
+new IntersectionObserver(([e], io) => {
+  if (!e.isIntersecting) return;
+  contact.classList.add('is-in');
+  contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
+  io.disconnect();
+}, { threshold: 0.2 }).observe(contact);
+
+const copyBtn = contact.querySelector('.contact__copy');
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(copyBtn.dataset.copy);
+    copyBtn.textContent = 'Copied ✓';
+  } catch {
+    copyBtn.textContent = 'Press ⌘C';
+    getSelection().selectAllChildren(contact.querySelector('.contact__email'));
+  }
+  copyBtn.classList.add('is-done');
+  clearTimeout(copyBtn._t);
+  copyBtn._t = setTimeout(() => { copyBtn.textContent = 'Copy email'; copyBtn.classList.remove('is-done'); }, 1800);
+});

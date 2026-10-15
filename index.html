@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en" data-theme="ink">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Saksham Jamwal — Product Designer</title>
+  <meta name="description" content="Saksham Jamwal is a senior product designer. Fintech at INDmoney, quick-commerce at Zepto, streaming at Zee5. Shipped to production, measured after launch." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- fixed top bar: stays put over every section -->
+  <header class="bar bar--top mono">
+    <a href="#top" class="logo" data-scramble>SAKSHAM.JAMWAL</a>
+    <nav class="nav">
+      <a href="#work" data-scramble>Work</a>
+      <a href="#about" data-scramble>About</a>
+      <a href="#contact" data-scramble>Contact</a>
+      <a href="assets/Saksham-Jamwal-CV.pdf" target="_blank" rel="noopener" data-scramble>Résumé</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ───────── FOLD 01 · HERO ───────── -->
+    <section class="hero" id="top">
+      <div class="hero__bg" aria-hidden="true">
+        <img class="hero__photo" src="assets/hero-bg.webp" alt="" width="2000" height="1132" fetchpriority="high" decoding="async" />
+      </div>
+
+      <canvas class="hero__gl" aria-hidden="true"></canvas>
+
+      <!-- above the WebGL layer: hairlines, legibility scrims, and a + at every crossing -->
+      <div class="hero__veil" aria-hidden="true"></div>
+      <div class="hero__grid" aria-hidden="true">
+        <span class="gl gl--h" style="--y: 34%"></span>
+        <span class="gl gl--h" style="--y: 70%"></span>
+        <span class="plus" style="--x: var(--vx); --y: 34%"></span>
+        <span class="plus" style="--x: 33.333%; --y: 34%"></span>
+        <span class="plus" style="--x: 66.666%; --y: 34%"></span>
+        <span class="plus" style="--x: calc(100% - var(--vx)); --y: 34%"></span>
+        <span class="plus" style="--x: var(--vx); --y: 70%"></span>
+        <span class="plus" style="--x: 33.333%; --y: 70%"></span>
+        <span class="plus" style="--x: 66.666%; --y: 70%"></span>
+        <span class="plus" style="--x: calc(100% - var(--vx)); --y: 70%"></span>
+      </div>
+
+      <div class="intro">
+        <p class="intro__bio mono">I’m Saksham, a Senior Product Designer at INDmoney. Outside of work, I make art, create content, and dabble in a bit of everything creative.</p>
+      </div>
+
+      <h1 class="headline">
+        <span class="sr-only">Hello, I'm Saksham Jamwal. I design products that ship and scale.</span>
+        <span class="w" aria-hidden="true"><span>I Design</span></span>
+        <span class="w" aria-hidden="true"><span>Products That</span></span>
+        <span class="w" aria-hidden="true"><span>Ship &amp; Scale</span></span>
+      </h1>
+
+
+
+
+
+
+
+      <footer class="hero__foot mono">
+        <span class="clock" data-scramble>Bangalore · --:-- IST</span>
+        <a class="lnk" href="mailto:s.jamwal.ux@gmail.com" data-scramble>s.jamwal.ux@gmail.com</a>
+      </footer>
+    </section>
+
+    <!-- ───────── ABOUT ───────── -->
+    <section class="about" id="about" aria-label="About">
+      <div class="cell cell--1 about__media">
+        <!-- pop-art collage: halftone shadow, magenta offset copy, black-and-white cutout -->
+        <figure class="about__collage">
+          <div class="layer layer--dots" aria-hidden="true"></div>
+          <div class="layer layer--pink" aria-hidden="true"><img src="assets/portrait-cutout.png" alt="" /></div>
+          <img class="layer layer--main" src="assets/portrait-cutout.png" alt="Saksham Jamwal, sitting on white stone steps" width="1000" height="1600" loading="lazy" decoding="async" />
+        </figure>
+      </div>
+      <div class="cell cell--23 about__copy">
+        <p class="about__lead" data-reveal="2">I've designed finance and commerce products that turn complex problems into simple, useful experiences — with a focus on craft, scale, and measurable impact.</p>
+        <p class="about__sub" data-reveal="3">I’m currently leading Platform, Wealth Tracking &amp; Lending at <a href="https://www.indmoney.com" target="_blank" rel="noopener">INDmoney</a>, previously designing products at <a href="https://www.zeptonow.com" target="_blank" rel="noopener">Zepto</a> and <a href="https://www.zee5.com" target="_blank" rel="noopener">Zee5</a>.</p>
+      </div>
+    </section>
+
+    <!-- ───────── FOLD 02 · SELECTED WORK ───────── -->
+    <section class="work" id="work" aria-label="Selected work">
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>Selected Work</span><span class="o">●</span><span>Selected Work</span><span class="o">●</span>
+          <span>Selected Work</span><span class="o">●</span><span>Selected Work</span><span class="o">●</span>
+        </div>
+      </div>
+
+      <!-- journal-style lists (pxpush.com/journal): number · title · description, hover reveals the cover.
+           To use real covers, replace a .cover in a row's <template> with <img src="assets/work/….jpg" alt="…"> -->
+      <div class="wl-group">
+        <p class="wl-group__title mono"><span>Recent work at INDmoney</span><span class="wl-group__count">05</span></p>
+        <ol class="worklist">
+        <li class="wl-row">
+          <a class="wl-link is-linked" href="https://www.figma.com/proto/KhEmOxDsh1dKceOKin5JmB/Saksham-Jamwal?node-id=6240-40560&amp;viewport=290%2C241%2C0.04&amp;t=kUcqIpo0Xp8q4T7A-1&amp;scaling=contain&amp;content-scaling=fixed&amp;page-id=6240%3A106" target="_blank" rel="noopener">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº001</span></div>
+            <h3 class="cell cell--2 wl-title">Wealth Tracking<span class="wl-arrow" aria-hidden="true">↗</span></h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Redesigned 8 <strong>wealth-tracking</strong> experiences across Savings, Equity, US Stocks, etc., helping users track their net worth, investments, liabilities, and portfolio insights in one place. The Equity tracking revamp alone drove <strong>+243% MAU</strong> growth (78K → 268K) and <strong>+53%</strong> visits/user.</p>
+              <p class="wl-stats mono">8 trackers · ~4L savings users · 2× engagement</p>
+            </div>
+          </a>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">~30% active · 2× prior</p>
+              <p class="cover__metric">2×</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº002</span></div>
+            <h3 class="cell cell--2 wl-title">Insta Cash</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Revamped mini app with cohort-customised views, contributing to highest-ever quarterly disbursals of <strong>~$52M</strong> (₹441 Cr).</p>
+              <p class="wl-stats mono">₹441 Cr instacash / qtr · ₹181 Cr instaplus / qtr · +61% monthly volume</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Lending · Record quarter</p>
+              <p class="cover__metric">₹441 Cr</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº003</span></div>
+            <h3 class="cell cell--2 wl-title">Tax Filing</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">A guided tax filing platform helping users file their ITR seamlessly with automated data imports, expert support and real-time validation.</p>
+              <p class="wl-stats mono">10K+ filed by d15 · 33K+ prefills · 54K+ impressions</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">ITR · FY 25–26</p>
+              <p class="cover__metric">10K+</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº004</span></div>
+            <h3 class="cell cell--2 wl-title">INDsocial</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">INDmoney’s social investing platform where users discover investment content, share portfolio performance and market insights. Reached <strong>452K+ feed viewers by D30</strong>.</p>
+              <p class="wl-stats mono">452K+ feed viewers, d30 · 0 → 1 scope · Social format</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Social investing · D30</p>
+              <p class="cover__metric">452K+</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº005</span></div>
+            <h3 class="cell cell--2 wl-title">Cross-product Engagement</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Led the engagement strategy across <strong>US Stocks</strong> and <strong>Credit Card Bill Payments</strong>, nudging users from one product into the next and unlocking a <strong>15% activation uplift</strong>.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">US Stocks × Card bill pay</p>
+              <p class="cover__metric">+15%</p>
+            </div>
+          </template>
+        </li>
+        </ol>
+      </div>
+
+      <div class="wl-group">
+        <p class="wl-group__title mono"><span>Previous work at Zepto</span><span class="wl-group__count">05</span></p>
+        <ol class="worklist">
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº001</span></div>
+            <h3 class="cell cell--2 wl-title">Zepto Cafe</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Worked on the Zepto Cafe revamp, boosting PiP-to-order conversion by <strong>3.23%</strong> and accelerating add-to-cart time by <strong>4%</strong> with a SKU-first design.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Cafe · SKU-first</p>
+              <p class="cover__metric">+3.23%</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº002</span></div>
+            <h3 class="cell cell--2 wl-title">Investor Relations Website</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Designed a responsive website, making it easy for investors to find key company updates and financials through a clean and easy-to-navigate layout.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Investor relations · Web</p>
+              <p class="cover__metric">IR</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº003</span></div>
+            <h3 class="cell cell--2 wl-title">Onboarding Revamp</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Redesigned Zepto’s onboarding flow to reduce friction for new users, addressing a <strong>~60% drop-off</strong> rate before homepage entry.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Onboarding · Drop-off</p>
+              <p class="cover__metric">~60%</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº004</span></div>
+            <h3 class="cell cell--2 wl-title">Theme Based Buying Experience</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Achieved <strong>+1.2–1.4% ATC</strong> lift across key categories through theme based experiments integrated on the search results page.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Search · ATC lift</p>
+              <p class="cover__metric">+1.4%</p>
+            </div>
+          </template>
+        </li>
+        <li class="wl-row">
+          <div class="wl-link">
+            <div class="cell cell--1 wl-meta mono"><i class="dot"></i><span class="no">Nº005</span></div>
+            <h3 class="cell cell--2 wl-title">CS Ticketing Tool</h3>
+            <div class="cell cell--3 wl-side">
+              <p class="wl-desc">Owned and shipped a customer service ticketing tool in <strong>10 days</strong>, replacing the third party customer support system with a workflow-optimized, agent-friendly internal platform.</p>
+            </div>
+          </div>
+          <template class="wl-cover">
+            <div class="cover">
+              <div class="cover__phone"><span></span><span></span><span></span><span></span><span></span></div>
+              <p class="cover__label mono">Internal tool · Shipped</p>
+              <p class="cover__metric">10 days</p>
+            </div>
+          </template>
+        </li>
+        </ol>
+      </div>
+
+      <div class="wl-end">
+        <a class="btn mono" href="https://www.figma.com/proto/KhEmOxDsh1dKceOKin5JmB/Saksham-Jamwal?node-id=30-85&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=30%3A165&amp;page-id=0%3A1" target="_blank" rel="noopener">Open full portfolio <span>↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ───────── CONTACT ───────── -->
+  <footer class="contact" id="contact" aria-label="Contact">
+    <div class="contact__top">
+      <p class="cell cell--1 contact__kicker mono"><i class="dot"></i><span data-scramble>Liked my work?</span></p>
+      <p class="cell cell--3 contact__note mono">Open to a chat about product, design, or anything creative.</p>
+    </div>
+
+    <h2 class="contact__head">
+      <span class="sr-only">Don’t be a stranger, get in touch!</span>
+      <span class="w" aria-hidden="true"><span>Don’t be</span></span>
+      <span class="w" aria-hidden="true"><span>a stranger,</span></span>
+      <span class="w" aria-hidden="true"><span>get in touch<em>!</em></span></span>
+    </h2>
+
+    <div class="contact__mail">
+      <a class="contact__email" href="mailto:s.jamwal.ux@gmail.com">s.jamwal.ux@gmail.com<span aria-hidden="true">↗</span></a>
+      <button class="btn mono contact__copy" type="button" data-copy="s.jamwal.ux@gmail.com">Copy email</button>
+    </div>
+
+    <ul class="contact__social mono">
+      <li class="cell cell--1"><a href="https://www.linkedin.com/in/sakshamjamwal27/" target="_blank" rel="noopener"><span>LinkedIn</span><span aria-hidden="true">↗</span></a></li>
+      <li class="cell cell--2"><a href="https://www.instagram.com/s.magink/" target="_blank" rel="noopener"><span>Instagram</span><span aria-hidden="true">↗</span></a></li>
+      <li class="cell cell--3"><a href="https://www.behance.net/sakshamjamwal" target="_blank" rel="noopener"><span>Behance</span><span aria-hidden="true">↗</span></a></li>
+    </ul>
+
+    <div class="contact__base mono">
+      <span class="cell cell--1">© 2026 Saksham Jamwal</span>
+      <span class="cell cell--2">Bangalore, India</span>
+      <span class="cell cell--3"><a class="lnk" href="#top">Back to top ↑</a></span>
+    </div>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
