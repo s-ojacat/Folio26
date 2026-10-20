@@ -315,7 +315,7 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
        .50  – .68  the flap swings open
        .60  – .86  the letter rises out of the pocket
        .78  – .95  the envelope drops away, the letter settles to full size
-       .84  – 1    the stickers land, one after another */
+       .80  – 1    the stickers land, one after another */
   const face = contact.querySelector('.contact__face');
   const letter = face.querySelector('.letter');
   const stickers = [...face.querySelectorAll('.el')].map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
@@ -335,7 +335,7 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     letter.style.setProperty('--ly', `${ly.toFixed(2)}%`);
     letter.style.setProperty('--ls', ls.toFixed(4));
     for (const { el, at } of stickers) {
-      el.style.setProperty('--s', at === 0 ? 1 : back(span(p, 0.84 + (at - 1) * 0.022, 0.9 + (at - 1) * 0.022)).toFixed(4));
+      el.style.setProperty('--s', at === 0 ? 1 : back(span(p, 0.8 + (at - 1) * 0.02, 0.86 + (at - 1) * 0.02)).toFixed(4));
     }
   }
   const update = () => {

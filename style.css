@@ -706,32 +706,31 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 @media (hover: hover) and (pointer: fine) { .contact__face:hover .contact__face-alt { opacity: 1; } }
 .contact__face.is-alt .contact__face-alt { opacity: 1; }
 
+/* ── the collage, matched to the reference: every left/top/width is a % of the face box ── */
 /* sheets behind the face: two pale blue pages and a printed sketch sheet */
 .paper { position: absolute; z-index: 0; box-shadow: 0 10px 22px rgba(40, 40, 60, .16); }
-.paper--blue1 { left: -32%; top: 8%; width: 96%; height: 96%; rotate: -7deg; background: linear-gradient(165deg, #e3ecf8, #c3d5ec); }
-.paper--blue2 { left: -4%; top: 36%; width: 110%; height: 84%; rotate: 5deg; background: linear-gradient(200deg, #d8e5f5, #b6cbe7); }
-.paper--sheet {
-  left: -20%; top: 26%; width: 84%; height: 86%; rotate: -24deg;
-  background:
-    linear-gradient(#2a2a2a, #2a2a2a) 8% 14% / 84% 1.5px no-repeat,
-    repeating-linear-gradient(0deg, rgba(30, 30, 30, .32) 0 1px, transparent 1px 7.2%) 8% 22% / 84% 70% no-repeat,
-    repeating-linear-gradient(90deg, rgba(30, 30, 30, .32) 0 1px, transparent 1px 12%) 8% 22% / 84% 70% no-repeat,
-    #f7f4ec;
+.paper--blue1 {
+  left: -21%; top: 5%; width: 80%; height: 66%; rotate: -12deg;
+  background: linear-gradient(0deg, #9dbbe2 0 3.5%, transparent 3.5%), linear-gradient(165deg, #edf3fa, #cddcf0);
 }
-.paper--sheet i {
-  position: absolute; left: 8%; top: 6%; font-style: normal;
-  font-family: var(--mono); font-size: clamp(5px, .5vw, 9px); letter-spacing: .14em; text-transform: uppercase; color: #333;
+.paper--blue2 { left: 46.5%; top: 49%; width: 58%; height: 43%; rotate: -22deg; background: linear-gradient(200deg, #dbe7f6, #bed2ec); }
+.paper--sheet {   /* the supplied sheet, clip and silver star; fitted to the reference by the clip's ring and the star */
+  left: -15.1%; top: 21%; width: 106%; height: auto; box-shadow: none;
+  filter: drop-shadow(0 10px 18px rgba(40, 40, 60, .18));
 }
+.paper--sheet i { left: 9%; top: 3%; }
+.paper--sheet em { left: 2%; top: 60%; transform-origin: 0 0; rotate: 90deg; font-size: 1.7cqw; }
 
-/* cutouts: placed in % of the face box; each rides the pointer at its own depth (--d), lands
-   with a pop as the envelope empties (--s from main.js) and pops again when hovered */
+/* cutouts: each rides the pointer at its own depth (--d), lands with a pop as the envelope
+   empties (--s from main.js) and pops again when hovered */
+.contact__face { container-type: inline-size; }
 .contact__face .el {
   position: absolute; z-index: 3; display: block;
   left: var(--x); top: var(--y); width: var(--w);
   rotate: var(--r, 0deg);
   translate: calc(var(--mx) * var(--d) * 1px) calc(var(--my) * var(--d) * .8px);
   transform: scale(var(--s, 1)); opacity: min(1, calc(var(--s, 1) * 3));
-  filter: drop-shadow(0 8px 12px rgba(40, 30, 20, .32));
+  filter: drop-shadow(0 8px 12px rgba(40, 30, 20, .3));
   transition: translate .9s var(--ease-out), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
 }
 .contact__face .el img, .contact__face .el svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
@@ -739,36 +738,22 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
   .contact__face .el:hover { scale: 1.1; rotate: calc(var(--r, 0deg) + 7deg); }
   .contact__face .el:nth-of-type(even):hover { rotate: calc(var(--r, 0deg) - 8deg); }
 }
-.el--clip   { --x: -24%; --y: 20%; --w: 22%; --r: -32deg; z-index: 1 !important; }
-.el--burst  { --x: 64%;  --y: -6%; --w: 62%; --r: 8deg; z-index: 1 !important; }
-.contact__face .el--burst {   /* the yellow burst, recast in red: its shape as a mask, its texture multiplied in */
-  background: #e3261b;
-  -webkit-mask: url("assets/collage/burst.webp") 0 0 / 100% 100% no-repeat;
-          mask: url("assets/collage/burst.webp") 0 0 / 100% 100% no-repeat;
+.el--burst   { --x: 64.5%;  --y: -2.1%; --w: 60.8%; --r: -6deg; z-index: 1 !important; }
+.el--swirl   { --x: -21.2%; --y: 38.8%; --w: 18.9%; z-index: 1 !important; }
+.contact__face .el--swirl { filter: none; height: auto; }
+.contact__face .el--script {
+  --x: 108%; --y: 51%; width: auto; z-index: 1; filter: none;
+  font-family: "Mrs Saint Delafield", cursive; font-size: 15cqw; line-height: 1; color: #e3261b; white-space: nowrap;
 }
-.contact__face .el--burst img { filter: grayscale(1) brightness(1.2) contrast(1.5); mix-blend-mode: multiply; }
-.el--puzzle { --x: 12%;  --y: 13%; --w: 24%; --r: -12deg; }
-.el--mouth  { --x: 27%;  --y: 62%; --w: 46%; --r: 2deg; }
-.el--star1  { --x: 72%;  --y: 30%; --w: 17%; --r: 10deg; }
-.el--star2  { --x: 86%;  --y: 50%; --w: 15%; --r: -12deg; }
-.el--star3  { --x: -2%;  --y: 84%; --w: 16%; --r: 16deg; }
-.el--silver { --x: -18%; --y: 50%; --w: 14%; --r: -8deg; }
-.contact__face .el--silver img { filter: grayscale(1) brightness(1.45) contrast(1.15); }
-.el--arrow  { --x: 84%;  --y: 96%; --w: 15%; --r: -6deg; }
+.el--puzzle  { --x: 14.6%;  --y: 7.7%;  --w: 17.2%; }
+.el--bandaid { --x: 20.2%;  --y: 28.9%; --w: 22.2%; }
+.el--mouth   { --x: 34.1%;  --y: 67.5%; --w: 32.9%; }
+.el--star1   { --x: 77.9%;  --y: 32.3%; --w: 15.5%; --r: -4deg; }
+.el--star2   { --x: 87.3%;  --y: 45.5%; --w: 15.8%; --r: 10deg; }
+.el--star3   { --x: 7.4%;   --y: 71.4%; --w: 12.6%; --r: -6deg; }
+.el--arrow   { --x: 79.4%;  --y: 85.5%; --w: 15.5%; }
 .el--arrow img { image-rendering: pixelated; }
-/* the left eye, cut from the photo itself and printed black on yellow */
-.contact__face .el--eye {
-  --x: calc(var(--fl) * 1%); --y: calc(var(--ft) * 1%); --w: calc(var(--fw) * 1%);
-  height: calc(var(--fh) * 1%); overflow: hidden;
-  clip-path: ellipse(50% 47% at 50% 50%);
-  filter: none;
-}
-.contact__face .el--eye img {
-  position: absolute; max-width: none;
-  width: calc(100% * 100 / var(--fw)); height: calc(100% * 100 / var(--fh));
-  left: calc(-100% * var(--fl) / var(--fw)); top: calc(-100% * var(--ft) / var(--fh));
-  filter: url(#eye-duo);
-}
+.el--eye     { --x: 12.2%;  --y: 45.2%; --w: 31.6%; }
 
 /* if the face fails to load, fall back to the dotted silhouette alone */
 .contact__face-ph { display: none; }
