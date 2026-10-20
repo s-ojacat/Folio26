@@ -1,76 +1,23 @@
-// Footer background: crumpled grid paper, generated in a shader at the screen's full pixel
-// density (so it stays crisp), plus the hero's pointer fluid, which smears it like liquid.
-// The paper is static, so it is drawn once into a texture; after that only the fluid and the
-// display pass run, and only while the pointer has stirred it recently.
+// Footer background: a photo of crumpled grid paper (assets/paper.jpg, turned to landscape),
+// cover-fitted and drawn once per size at the screen's full pixel density with a light unsharp
+// mask so the grid stays crisp when upscaled; then the hero's pointer fluid smears it like
+// liquid. Only the fluid and the display pass run per frame, and only after a stir.
 import * as THREE from 'three';
 import { QUAD_VERT, SPLAT_FRAG, DIVERGENCE_FRAG, PRESSURE_FRAG, GRADIENT_FRAG, ADVECT_FRAG, SCALE_FRAG } from './hero.js';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* crumpled paper: smooth-voronoi facets, each tilted its own way (two scales), lit from the
-   top left; darker creases where cells meet; a grid printed on it that kinks with the folds */
+// cover-fit the photo and sharpen it a touch (4-tap unsharp mask at the photo's own texel size)
 const PAPER_FRAG = /* glsl */`
-uniform vec2 uRes; uniform float uPx;
+uniform sampler2D uImg; uniform vec2 uCover; uniform vec2 uTexel; uniform float uSharp;
 varying vec2 vUv;
-vec2 hash2(vec2 p) {
-  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-  return fract(sin(p) * 43758.5453);
-}
-float hash1(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-// facet tilt (xy) of the nearest cell, eased toward the next cell only right at the crease,
-// plus crease strength (z): flat planes with straight, soft-edged folds between them
-vec3 facets(vec2 x, float crease) {
-  vec2 n = floor(x), f = fract(x);
-  float d1 = 8.0, d2 = 8.0; vec2 t1 = vec2(0.0), t2 = vec2(0.0);
-  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
-    vec2 g = vec2(float(i), float(j));
-    vec2 o = hash2(n + g);
-    vec2 r = g + o - f;
-    float d = dot(r, r);
-    vec2 t = hash2(n + g + 17.31) * 2.0 - 1.0;
-    if (d < d1) { d2 = d1; t2 = t1; d1 = d; t1 = t; } else if (d < d2) { d2 = d; t2 = t; }
-  }
-  float edge = (d2 - d1) / (2.0 * sqrt(d2) + 1e-4);   // ~distance to the cell border
-  float k = 1.0 - smoothstep(0.0, crease, edge);
-  return vec3(mix(t1, (t1 + t2) * 0.5, k), 1.0 - smoothstep(0.0, crease * 0.6, edge));
-}
-// a few long straight folds across the whole sheet
-vec2 folds(vec2 p) {
-  vec2 t = vec2(0.0);
-  for (int i = 0; i < 5; i++) {
-    float fi = float(i);
-    vec2 dir = normalize(vec2(cos(fi * 2.39 + 0.6), sin(fi * 2.39 + 0.6)));
-    vec2 c = (hash2(vec2(fi, 3.7)) - 0.5) * 2.2;
-    float s = dot(p - c, dir);
-    t += dir * 0.35 * smoothstep(-0.025, 0.025, s) * (mod(fi, 2.0) * 2.0 - 1.0);
-  }
-  return t;
-}
 void main() {
-  vec2 px = vUv * uRes / uPx;                       // CSS pixels
-  vec2 p = px / 300.0;                              // facets ~300px across
-  vec3 a = facets(p, 0.05);
-  vec3 b = facets(p * 2.6 + 7.7, 0.07);
-  vec2 tilt = a.xy * 0.7 + b.xy * 0.3 + folds((vUv - 0.5) * vec2(uRes.x / uRes.y, 1.0));
-  vec3 nrm = normalize(vec3(-tilt * 0.55, 1.0));
-  vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
-  float lit = dot(nrm, L);
-
-  vec3 paper = vec3(0.95, 0.94, 0.918);
-  vec3 col = paper * (0.83 + 0.22 * lit);
-  col *= 1.0 - 0.045 * a.z - 0.025 * b.z;           // crease lines
-
-  // printed grid, 30px, displaced a little by the fold under it
-  vec2 g = px + tilt * 3.5;
-  vec2 gv = abs(fract(g / 30.0 - 0.5) - 0.5) * 30.0;
-  float aa = max(fwidth(g.x), fwidth(g.y)) * 0.75 + 0.3;
-  float line = max(1.0 - smoothstep(0.35, 0.35 + aa, gv.x), 1.0 - smoothstep(0.35, 0.35 + aa, gv.y));
-  col = mix(col, col * vec3(0.42, 0.42, 0.44), line * 0.5);
-
-  // paper grain and a soft vignette
-  col += (hash1(floor(px * 1.5)) - 0.5) * 0.028;
-  col *= 1.0 - 0.1 * pow(length(vUv - 0.5) * 1.25, 2.4);
-  gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 1.0);   // to linear
+  vec2 uv = (vUv - 0.5) * uCover + 0.5;
+  vec3 c = texture2D(uImg, uv).rgb;
+  vec3 n = texture2D(uImg, uv + vec2(uTexel.x, 0.0)).rgb + texture2D(uImg, uv - vec2(uTexel.x, 0.0)).rgb
+         + texture2D(uImg, uv + vec2(0.0, uTexel.y)).rgb + texture2D(uImg, uv - vec2(0.0, uTexel.y)).rgb;
+  c += (c - n * 0.25) * uSharp;
+  gl_FragColor = vec4(max(c, 0.0), 1.0);
 }`;
 
 // warps the paper along the velocity field, with a faint colour fringe on fast flow
@@ -101,7 +48,6 @@ export function startFooterPaper({ host, events }) {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'low-power' });
   } catch { return null; }   // no WebGL: the CSS paper stays
   host.prepend(canvas);
-  host.classList.add('has-gl');
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));   // full density: the grid must stay sharp
   renderer.autoClear = false;
 
@@ -114,7 +60,8 @@ export function startFooterPaper({ host, events }) {
   const pass = (material, target) => { quad.material = material; renderer.setRenderTarget(target); renderer.render(quadScene, quadCam); };
   const rt = (w, h, opts = {}) => new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, ...opts });
 
-  const paperMat = shader(PAPER_FRAG, { uRes: { value: new THREE.Vector2(1, 1) }, uPx: { value: 1 } });
+  const paperMat = shader(PAPER_FRAG, { uImg: { value: null }, uCover: { value: new THREE.Vector2(1, 1) }, uTexel: { value: new THREE.Vector2() }, uSharp: { value: 0.7 } });
+  let imgAspect = 1308 / 736;
   const paper = rt(1, 1, { type: THREE.HalfFloatType });
 
   /* fluid (same solver as the hero) */
@@ -142,19 +89,28 @@ export function startFooterPaper({ host, events }) {
     renderer.setSize(W, H, false);
     const dpr = renderer.getPixelRatio();
     paper.setSize(Math.round(W * dpr), Math.round(H * dpr));
-    paperMat.uniforms.uRes.value.set(W * dpr, H * dpr);
-    paperMat.uniforms.uPx.value = dpr;
     const aspect = W / H;
+    // cover: the photo fills the footer, cropped on the longer side
+    paperMat.uniforms.uCover.value.set(...(aspect > imgAspect ? [1, imgAspect / aspect] : [aspect / imgAspect, 1]));
     simW = aspect >= 1 ? SIM : Math.round(SIM * aspect);
     simH = aspect >= 1 ? Math.round(SIM / aspect) : SIM;
     [...vel, ...prs, div].forEach((t) => t.setSize(simW, simH));
     texel.set(1 / simW, 1 / simH);
     splatMat.uniforms.uAspect.value = aspect;
     displayMat.uniforms.uSimSize.value.set(simW, simH);
-    pass(paperMat, paper);   // the paper itself only changes with the size
+    if (paperMat.uniforms.uImg.value) pass(paperMat, paper);   // the paper itself only changes with the size
     draw();
   }
   new ResizeObserver(resize).observe(host);
+  new THREE.TextureLoader().load('assets/paper.jpg', (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    imgAspect = tex.image.width / tex.image.height;
+    paperMat.uniforms.uImg.value = tex;
+    paperMat.uniforms.uTexel.value.set(1 / tex.image.width, 1 / tex.image.height);
+    host.classList.add('has-gl');   // hide the CSS photo only once the WebGL one is drawn
+    resize();
+  });
   resize();
   if (reduceMotion) return { setActive() {} };
 
