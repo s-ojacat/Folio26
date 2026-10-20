@@ -310,100 +310,63 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const navH = () => document.querySelector('.bar--top')?.offsetHeight || 0;
 
-  /* the envelope, as a function of how much of the footer is uncovered (p, 0..1):
-       0    – .60  it slides in from the bottom edge, always sized and centred to fit what's
-                   uncovered (so the page never hides it), turning −90° → 0° and growing
-       .15  – .55  the flap opens on the way in; .25 – .62 the contents rise and peek out of
-                   the opening, held in the envelope and turning exactly with it
-       .62  – .80  it swells a little in the middle as it empties
-       .66  – .98  the contents fall out one after another (blue sheet, sketch sheet, blue
-                   sheet, burst, the face last), each from where the envelope holds it, arcing
-                   to its own spot and angle
-       .86  – .99  the empty envelope drops away; the stickers land on the face */
+  /* the envelope, as a function of how much of the footer is uncovered (p, 0..1), after the
+     storyboard. The whole collage (stickers already on) travels as one sheet inside it.
+       0    – .40  the envelope slides in from the bottom edge, closed, tilted 38° → 12° and
+                   growing; its top stays just below the lifting page (the bottom may run off
+                   the screen), so the page never hides it
+       .38  – .55  the flap opens; .45 – .62 the collage peeks out, at the envelope's angle
+       .62  – .85  the collage rises out of the pocket, still tilted with the envelope
+       .85  – 1    it straightens to 0° and settles at full size; the empty envelope falls away
+       .92  – 1    the pixel cursor lands */
   const face = contact.querySelector('.contact__face');
-  const stickers = [...face.querySelectorAll('.el')].filter((el) => !el.matches('.el--burst'))
-    .map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
-  const spill = [
-    { sel: '.paper--blue1', from: 0.66, slot: -0.04, peek: 0.2 },
-    { sel: '.paper--sheet', from: 0.705, slot: -0.02, peek: 0.24 },
-    { sel: '.paper--blue2', from: 0.75, slot: 0.02, peek: 0.16 },
-    { sel: '.el--burst', from: 0.795, slot: -0.02, peek: 0.3 },
-    { sel: '.contact__face-base, .contact__face-alt', from: 0.84, slot: 0.02, peek: 0.36 },
-  ].map((s) => ({ ...s, els: [...face.querySelectorAll(s.sel)] }));
-  const all = spill.flatMap((s) => s.els.map((el) => ({ el, s })));
-  all.forEach(({ el }) => el.classList.add('spill'));
-  // natural resting box and angle of every piece, in face-box px (JS drives their transform)
-  const rest = new Map();
-  function measureSpill() {
-    for (const { el } of all) {
-      el.style.transform = 'none'; el.style.rotate = '';
-      const own = parseFloat(getComputedStyle(el).rotate) || 0;
-      el.style.rotate = 'none';
-      rest.set(el, { L: el.offsetLeft, T: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, own });
-    }
-    envelope(lastP);
-  }
+  const letter = face.querySelector('.letter');
+  const stickers = [...face.querySelectorAll('.el')].map((el) => ({ el, late: el.matches('.el--arrow') }));
   const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
   const smooth = (x) => x * x * (3 - 2 * x);
-  const outCubic = (x) => 1 - Math.pow(1 - x, 3);
   const lerp = (a, b, t) => a + (b - a) * t;
   const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
   let lastP = 0;
   function envelope(p) {
     lastP = p;
     const W = face.offsetWidth, H = face.offsetHeight;
-    const cx = W * 0.5, cy = H * 0.534;                         // the envelope's centre at rest
-    const envH = W * 1.54 / 1.55;
-    // the envelope (with its flap, once open) always fits inside the uncovered strip, so the
-    // page above never hides it: it slides in from the bottom edge small and turned, grows as
-    // the strip grows, turns to 0° and opens its flap on the way, reaching the middle at the end
-    const fromTop = face.getBoundingClientRect().top - contact.getBoundingClientRect().top;   // face box, in footer px
+    const cy = H * 0.534;                                        // envelope centre at rest (face px)
+    const envW = W * 1.54, envH = envW / 1.55;
+    const fromTop = face.getBoundingClientRect().top - contact.getBoundingClientRect().top;
     const Hf = contact.offsetHeight;
-    const envW = W * 1.54;
-    const flap = smooth(span(p, 0.15, 0.55));
-    const drop = smooth(span(p, 0.86, 0.99));
-    const turn = -90 * (1 - smooth(span(p, 0, 0.6)));
-    const tr = Math.abs((turn * Math.PI) / 180);
-    const hTot = envH * (1 + 0.58 * flap);                        // body plus the opened flap above it
-    const extent = Math.cos(tr) * hTot + Math.sin(tr) * envW;     // its height on screen at this angle
-    const visible = p * Hf;
-    const fit = Math.min(1, Math.max(0.2, (0.88 * visible) / extent));
-    const es = fit * (1 + 0.1 * smooth(span(p, 0.62, 0.8))) * (1 - 0.12 * drop);
-    // centre the whole shape (flap included) in the strip; never above its resting centre
-    const stripMid = (1 - p) * Hf + visible / 2;
-    const centre = stripMid + 0.29 * flap * envH * es * Math.cos(tr);
-    const ex = 0, ey = Math.max(0, centre - (fromTop + cy)) + drop * envH * 0.95;
-    const erot = turn + drop * 7;
-    const peek = smooth(span(p, 0.25, 0.62));                    // contents rise into the opening
-    face.style.setProperty('--ex', `${ex.toFixed(1)}px`);
-    face.style.setProperty('--ey', `${ey.toFixed(1)}px`);
-    face.style.setProperty('--erot', erot.toFixed(2));
+    const flap = smooth(span(p, 0.38, 0.55));
+    const fall = smooth(span(p, 0.86, 1));
+    const tilt = lerp(38, 12, smooth(span(p, 0, 0.4)));          // degrees, clockwise
+    const tr = (tilt * Math.PI) / 180, cos = Math.cos(tr), sin = Math.sin(tr);
+    const es = lerp(0.55, 0.95, smooth(span(p, 0, 0.4))) + 0.13 * smooth(span(p, 0.45, 0.75));
+    // the collage: held at ~half size in the envelope, peeking, then rising out of it
+    const rise = smooth(span(p, 0.45, 0.62)) * 0.12 + smooth(span(p, 0.62, 0.85)) * 0.36;   // envelope heights
+    const held = lerp(0.5, 0.6, smooth(span(p, 0.45, 0.85)));
+    // keep the top of everything (envelope corners, open flap, peeking collage) below the page
+    const lift = Math.max(0, -Math.cos(flap * Math.PI));         // how far the flap stands up
+    const top = Math.max(
+      (sin * envW / 2 + cos * envH / 2) * es,
+      cos * (0.5 + 0.58 * lift) * envH * es,
+      cos * (0.55 * H * held + rise * envH * es),
+    );
+    const stripTop = (1 - p) * Hf;
+    const ey0 = Math.max(0, stripTop + 18 + top - (fromTop + cy));
+    face.style.setProperty('--ex', '0px');
+    face.style.setProperty('--ey', `${(ey0 + fall * envH * 1.1).toFixed(1)}px`);
+    face.style.setProperty('--erot', (tilt + fall * 10).toFixed(2));
     face.style.setProperty('--es', es.toFixed(4));
     face.style.setProperty('--flap', flap.toFixed(4));
-    face.style.setProperty('--drop', drop.toFixed(4));
+    face.style.setProperty('--drop', fall.toFixed(4));
     face.classList.toggle('flap-open', flap > 0.5);
-    const rad = (erot * Math.PI) / 180, cos = Math.cos(rad), sin = Math.sin(rad);
-    for (const { el, s } of all) {
-      const r = rest.get(el);
-      if (!r) continue;
-      const k = outCubic(span(p, s.from, s.from + 0.14));
-      // held: in its slot inside the envelope, peeking out of the opening, carried by the
-      // envelope's position, angle and size (so it turns exactly as the envelope turns)
-      const sx = 0, sy = (s.slot - s.peek * peek) * envH * es;
-      const hx = cx + ex + (sx * cos - sy * sin), hy = cy + ey + (sx * sin + sy * cos);
-      const ox = r.L + r.w / 2, oy = r.T + r.h / 2;
-      const px = lerp(hx, ox, k), py = lerp(hy, oy, k) - Math.sin(k * Math.PI) * H * 0.08;   // a little arc as it falls out
-      const ang = lerp(erot, r.own, k), sc = lerp(es * 0.38, 1, k);
-      el.style.transform = `translate(${(px - r.L).toFixed(1)}px, ${(py - r.T).toFixed(1)}px) rotate(${ang.toFixed(2)}deg) scale(${sc.toFixed(4)}) translate(${(-r.w / 2).toFixed(1)}px, ${(-r.h / 2).toFixed(1)}px)`;
-    }
-    for (const { el, at } of stickers) {
-      el.style.setProperty('--s', back(span(p, 0.88 + (at - 1) * 0.012, 0.915 + (at - 1) * 0.012)).toFixed(4));
-    }
+    const rx = sin * rise * envH * es, ry = -cos * rise * envH * es;
+    const settle = smooth(span(p, 0.85, 1));
+    const lx = lerp(rx, 0, settle), ly = lerp(ey0 + ry, 0, settle);
+    const lr = lerp(tilt, 0, settle), ls = lerp(held, 1, settle);
+    letter.style.transform = `translate(${lx.toFixed(1)}px, ${ly.toFixed(1)}px) rotate(${lr.toFixed(2)}deg) scale(${ls.toFixed(4)})`;
+    face.classList.toggle('letter-out', rise > 0.28);            // out of the pocket: in front of it
+    for (const { el, late } of stickers) el.style.setProperty('--s', late ? back(span(p, 0.92, 0.985)).toFixed(4) : '1');
   }
-  measureSpill();
-  new ResizeObserver(measureSpill).observe(face);
-  addEventListener('resize', measureSpill);
-  face.querySelectorAll('.letter img').forEach((img) => img.complete || img.addEventListener('load', measureSpill, { once: true }));
+  addEventListener('resize', () => envelope(lastP));
 
 
   const update = () => {
@@ -421,7 +384,7 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     document.body.classList.toggle('on-paper', t < navH());   // the paper is under the nav
     envelope(reduce ? 1 : 1 - t / H);
     // "Let's ... Talk" comes in once the collage has settled
-    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.93)) {
+    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.94)) {
       contact.classList.add('is-in');
       contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
     }
