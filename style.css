@@ -657,7 +657,8 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 .env {
   position: absolute; left: -27%; top: 14%; width: 154%; aspect-ratio: 1.55;
   pointer-events: none;
-  transform: translateY(calc(var(--drop) * 95%)) rotate(calc(var(--drop) * 7deg));
+  /* swings in from −90° as it enters, then drops away once it's empty */
+  transform: translateY(calc(var(--drop) * 95%)) rotate(calc(var(--erot, 0) * 1deg + var(--drop) * 7deg));
   opacity: calc(1 - var(--drop) * 1.25);
 }
 .env__back {
@@ -693,7 +694,16 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 }
 
 /* ── the letter: everything that comes out of the envelope ── */
-.letter { position: absolute; inset: 0; z-index: 2; transform-origin: 50% 55%; transform: translateY(var(--ly, 0%)) scale(var(--ls, 1)); }
+.letter { position: absolute; inset: 0; z-index: 2; }
+/* a piece spilling out: from the envelope's centre (--dx/--dy, measured in main.js), small and
+   turned −90°, to its resting spot and own angle as --k goes 0 → 1 */
+.contact__face .letter .spill {
+  transform:
+    translate(calc((1 - var(--k, 1)) * var(--dx, 0px)), calc((1 - var(--k, 1)) * var(--dy, 0px)))
+    rotate(calc((1 - var(--k, 1)) * -90deg))
+    scale(calc(.4 + .6 * var(--k, 1)));
+  opacity: min(1, calc(var(--k, 1) * 25));
+}
 .contact__face-base {
   position: relative; z-index: 2; display: block; width: 100%; height: 100%;
   filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 18px 30px rgba(40, 30, 20, .35));

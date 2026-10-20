@@ -311,33 +311,55 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
   const navH = () => document.querySelector('.bar--top')?.offsetHeight || 0;
 
   /* the envelope, as a function of how much of the footer is uncovered (p, 0..1):
-       0    – .50  sealed, riding up with the lifting page
-       .50  – .68  the flap swings open
-       .60  – .86  the letter rises out of the pocket
-       .78  – .95  the envelope drops away, the letter settles to full size
-       .80  – 1    the stickers land, one after another */
+       0    – .45  it swings in from −90° to 0° as it rides up with the lifting page
+       .45  – .60  the flap opens
+       .55  – .92  the contents spill out one after another, each from inside the envelope,
+                   turning from −90° to its own angle: blue sheet, sketch sheet, blue sheet,
+                   burst, and the face last
+       .84  – .98  the envelope drops away
+       .86  – .99  the stickers land on the face */
   const face = contact.querySelector('.contact__face');
-  const letter = face.querySelector('.letter');
-  const stickers = [...face.querySelectorAll('.el')].map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
-  const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-  const smooth = (x) => x * x * (3 - 2 * x);
-  const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
-  function envelope(p) {
-    const flap = smooth(span(p, 0.5, 0.68));
-    const rise = smooth(span(p, 0.6, 0.86));
-    const settle = smooth(span(p, 0.78, 0.95));
-    face.style.setProperty('--flap', flap.toFixed(4));
-    face.style.setProperty('--drop', smooth(span(p, 0.78, 0.95)).toFixed(4));
-    face.classList.toggle('flap-open', flap > 0.5);
-    // inside: small and low in the envelope; risen: up out of the pocket; settled: in place
-    const ly = (1 - rise) * 6 - rise * (1 - settle) * 30;
-    const ls = 0.44 + rise * 0.32 + settle * 0.24;
-    letter.style.setProperty('--ly', `${ly.toFixed(2)}%`);
-    letter.style.setProperty('--ls', ls.toFixed(4));
-    for (const { el, at } of stickers) {
-      el.style.setProperty('--s', at === 0 ? 1 : back(span(p, 0.8 + (at - 1) * 0.02, 0.86 + (at - 1) * 0.02)).toFixed(4));
+  const stickers = [...face.querySelectorAll('.el:not(.spill)')].map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
+  const spill = [
+    { els: [face.querySelector('.paper--blue1')], from: 0.55 },
+    { els: [face.querySelector('.paper--sheet')], from: 0.59 },
+    { els: [face.querySelector('.paper--blue2')], from: 0.63 },
+    { els: [face.querySelector('.el--burst')], from: 0.67 },
+    { els: [face.querySelector('.contact__face-base'), face.querySelector('.contact__face-alt')], from: 0.71 },
+  ].map((s) => ({ ...s, els: s.els.filter(Boolean) }));
+  spill.forEach((s) => s.els.forEach((el) => el.classList.add('spill')));
+  // each piece's path: from the envelope's centre (50%, 53.4% of the face box) to where it rests
+  function measureSpill() {
+    const W = face.offsetWidth, H = face.offsetHeight;
+    const ex = W * 0.5, ey = H * 0.534;
+    for (const { els } of spill) for (const el of els) {
+      el.style.setProperty('--dx', `${(ex - (el.offsetLeft + el.offsetWidth / 2)).toFixed(1)}px`);
+      el.style.setProperty('--dy', `${(ey - (el.offsetTop + el.offsetHeight / 2)).toFixed(1)}px`);
     }
   }
+  measureSpill();
+  new ResizeObserver(measureSpill).observe(face);
+  addEventListener('resize', measureSpill);
+  face.querySelectorAll('.letter img').forEach((img) => img.complete || img.addEventListener('load', measureSpill, { once: true }));
+  const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const smooth = (x) => x * x * (3 - 2 * x);
+  const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+  const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
+  function envelope(p) {
+    const flap = smooth(span(p, 0.45, 0.6));
+    face.style.setProperty('--erot', (-90 * (1 - outCubic(span(p, 0, 0.45)))).toFixed(2));
+    face.style.setProperty('--flap', flap.toFixed(4));
+    face.style.setProperty('--drop', smooth(span(p, 0.84, 0.98)).toFixed(4));
+    face.classList.toggle('flap-open', flap > 0.5);
+    for (const { els, from } of spill) {
+      const k = outCubic(span(p, from, from + 0.21)).toFixed(4);
+      for (const el of els) el.style.setProperty('--k', k);
+    }
+    for (const { el, at } of stickers) {
+      el.style.setProperty('--s', back(span(p, 0.86 + (at - 1) * 0.015, 0.905 + (at - 1) * 0.015)).toFixed(4));
+    }
+  }
+
   const update = () => {
     const H = contact.offsetHeight, W = contact.offsetWidth;
     const footTop = innerHeight - H;
@@ -354,7 +376,7 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     document.body.classList.toggle('on-paper', t < navH());   // the paper is under the nav
     envelope(reduce ? 1 : 1 - t / H);
     // "Let's ... Talk" comes in once the collage has settled
-    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.86)) {
+    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.9)) {
       contact.classList.add('is-in');
       contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
     }
