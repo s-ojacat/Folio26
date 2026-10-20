@@ -288,9 +288,31 @@
 
   <!-- ───────── CONTACT ───────── -->
   <footer class="contact" id="contact" aria-label="Contact">
-    <div class="contact__top">
-      <p class="cell cell--1 contact__kicker mono"><i class="dot"></i><span data-scramble>Liked my work?</span></p>
-      <p class="cell cell--3 contact__note mono">Open to a chat about product, design, or anything creative.</p>
+    <div class="contact__bar" aria-hidden="true"></div>
+
+    <div class="contact__cols">
+      <nav class="cell cell--1 contact__col" aria-label="Footer">
+        <p class="contact__label mono">Links</p>
+        <ul class="contact__list">
+          <li><a href="#top">Home</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="assets/Saksham-Jamwal-CV.pdf" target="_blank" rel="noopener">Résumé</a></li>
+        </ul>
+      </nav>
+      <div class="cell cell--2 contact__col">
+        <p class="contact__label mono">Connect</p>
+        <ul class="contact__list">
+          <li><a href="https://www.linkedin.com/in/sakshamjamwal27/" target="_blank" rel="noopener">LinkedIn<span aria-hidden="true">↗</span></a></li>
+          <li><a href="https://www.behance.net/sakshamjamwal" target="_blank" rel="noopener">Behance<span aria-hidden="true">↗</span></a></li>
+          <li><a href="https://www.instagram.com/s.magink/" target="_blank" rel="noopener">Instagram<span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </div>
+      <div class="cell cell--3 contact__col contact__col--end">
+        <p class="contact__label mono"><i class="dot"></i><span data-scramble>Liked my work?</span></p>
+        <a class="contact__email" href="mailto:s.jamwal.ux@gmail.com">s.jamwal.ux@gmail.com</a>
+        <button class="contact__copy mono" type="button" data-copy="s.jamwal.ux@gmail.com">Copy email</button>
+      </div>
     </div>
 
     <h2 class="sr-only">Let’s talk</h2>
@@ -305,20 +327,23 @@
       <span class="contact__word contact__word--r">Talk</span>
     </div>
 
-    <div class="contact__mail">
-      <a class="contact__email" href="mailto:s.jamwal.ux@gmail.com">s.jamwal.ux@gmail.com<span aria-hidden="true">↗</span></a>
-      <button class="btn mono contact__copy" type="button" data-copy="s.jamwal.ux@gmail.com">Copy email</button>
+    <!-- a garment-care label, after aperios-design.co.uk's footer -->
+    <div class="contact__care">
+      <p>Handled with<br /><span class="caps">100% care</span></p>
+      <div class="contact__icons" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><text x="16" y="21.5" text-anchor="middle">S</text></svg>
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><path d="M7 7l18 18M25 7L7 25"/></svg>
+        <svg viewBox="0 0 32 32"><path d="M3 8l3 18h20l3-18M3 8c3 3 6 3 9 0 3 3 6 3 9 0 3 3 5 3 8 0"/><text x="16" y="23" text-anchor="middle" class="sm">30</text></svg>
+        <svg viewBox="0 0 32 32"><path d="M4 25h24v-3c0-7-5-12-12-12h-6l-2 3h8c4 0 7 2 8 6H4z"/><circle cx="16" cy="21.5" r="1.4" class="fill"/></svg>
+        <svg viewBox="0 0 32 32"><path d="M11 4l-8 5 3 6 3-2v15h14V13l3 2 3-6-8-5c-1 2.5-3 4-5 4s-4-1.5-5-4z"/></svg>
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><text x="16" y="21.5" text-anchor="middle">J</text></svg>
+      </div>
+      <p>Designed and<br /><span class="caps">made in Bangalore,<br />India</span></p>
     </div>
 
-    <ul class="contact__social mono">
-      <li class="cell cell--1"><a href="https://www.linkedin.com/in/sakshamjamwal27/" target="_blank" rel="noopener"><span>LinkedIn</span><span aria-hidden="true">↗</span></a></li>
-      <li class="cell cell--2"><a href="https://www.instagram.com/s.magink/" target="_blank" rel="noopener"><span>Instagram</span><span aria-hidden="true">↗</span></a></li>
-      <li class="cell cell--3"><a href="https://www.behance.net/sakshamjamwal" target="_blank" rel="noopener"><span>Behance</span><span aria-hidden="true">↗</span></a></li>
-    </ul>
-
-    <div class="contact__base mono">
-      <span class="cell cell--1">© 2026 Saksham Jamwal</span>
-      <span class="cell cell--2">Bangalore, India</span>
+    <div class="contact__base">
+      <span class="cell cell--1">Bangalore, India</span>
+      <span class="cell cell--2">©2026 Saksham Jamwal. All rights reserved.</span>
       <span class="cell cell--3"><a class="lnk" href="#top">Back to top ↑</a></span>
     </div>
   </footer>

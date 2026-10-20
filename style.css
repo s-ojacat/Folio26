@@ -286,7 +286,7 @@ a:focus-visible, button:focus-visible { outline: none; }
    a 1px vertical arm on each hairline (11px tall) and an 11px horizontal arm centred on it.
    The arm row (y = 5) sits on the line: own top border → top: -6px (absolute boxes start
    inside the border); a line belonging to the element above or at the edge → see below. */
-.about::before, .work::before, .contact::before {
+.about::before, .work::before {
   content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 11px; z-index: 2;
   pointer-events: none; opacity: .55;
   background:
@@ -487,50 +487,80 @@ a:focus-visible, button:focus-visible { outline: none; }
 .wl-end { padding: clamp(48px, 6vw, 96px) var(--pad) clamp(96px, 10vw, 160px); }
 
 /* ═════════════════════════ CONTACT ═════════════════════════ */
-/* the old site's sign-off, set in the hero's wide display type on the same three columns */
+/* laid out like aperios-design.co.uk's footer: a solid bar, three columns of links over a
+   dotted rule, one big centrepiece ("LET'S [face] TALK"), a care label, and a thin base row.
+   Quiet grey type throughout, so the face is the only thing in full colour. */
 .contact {
+  --mute: #9ca0a5;
   position: relative; z-index: 1;
-  border-top: 1px solid var(--line);
-  background: var(--vlines), var(--bg);
+  background: var(--bg); color: var(--mute);
+  padding-top: clamp(20px, 2vw, 28px);
 }
-.contact::before { top: -6px; }
-.contact__top {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: baseline;
-  padding-top: clamp(72px, 9vw, 150px);
-}
-.contact__kicker .dot { background: var(--accent); opacity: 1; box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
-.contact__kicker { display: flex; align-items: center; gap: 12px; margin: 0; font-size: clamp(11px, .8vw, 13px); letter-spacing: .14em; }
-.contact__note { margin: 0; max-width: 26em; color: var(--fg-dim); text-transform: none; letter-spacing: 0; font-size: clamp(12px, .95vw, 16px); line-height: 1.75; }
+.contact a { transition: color .15s ease; }
+@media (hover: hover) and (pointer: fine) { .contact a:hover { color: var(--fg); } }
+.contact a:focus-visible { color: var(--fg); outline: 1.5px dotted var(--fg); outline-offset: 4px; }
 
-/* "LET'S [face] TALK": the words sit behind the cutout, which overlaps their inner ends a little.
+.contact__bar { height: clamp(12px, 1.5vw, 30px); margin: 0 var(--pad); background: var(--mute); }
+
+.contact__cols {
+  position: relative;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end;
+  padding: clamp(18px, 1.6vw, 28px) 0 clamp(22px, 2vw, 32px);
+}
+.contact__cols::after {
+  content: ""; position: absolute; left: var(--pad); right: var(--pad); bottom: 0; height: 2px;
+  background: radial-gradient(circle, var(--mute) 0 .9px, transparent 1.2px) 0 0 / 6px 2px repeat-x;
+  opacity: .8;
+}
+.contact__col { align-self: stretch; display: flex; flex-direction: column; }
+.contact__col--end { align-items: flex-end; justify-content: flex-end; text-align: right; }
+.contact__label {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 clamp(14px, 1.4vw, 22px); font-size: 11px; letter-spacing: .08em;
+}
+.contact__label .dot { width: 7px; height: 7px; background: var(--accent); opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+.contact__list { margin: 0; padding: 0; list-style: none; }
+.contact__list a, .contact__email {
+  display: inline-flex; align-items: baseline; gap: .25em;
+  font-weight: 400; font-size: clamp(20px, 1.75vw, 30px); line-height: 1.12; letter-spacing: -0.01em;
+}
+.contact__list a span { font-size: .6em; display: inline-block; transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .contact__list a:hover span { transform: translate(2px, -2px); color: var(--accent); } }
+.contact__copy {
+  margin-top: 10px; font-size: 11px; letter-spacing: .08em; color: var(--mute);
+  border-bottom: 1px dotted currentColor; padding-bottom: 2px;
+  transition: color .15s ease, transform .16s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .contact__copy:hover { color: var(--fg); } }
+.contact__copy:active { transform: scale(.97); }
+.contact__copy.is-done { color: var(--accent); }
+
+/* "LET'S [face] TALK": the face is the centrepiece; the words sit small on either side.
    On the way in (main.js adds .is-in) the words slide toward the face and the face rises. */
 .contact__stage {
   --mx: 0; --my: 0;   /* pointer, -1..1 (main.js) */
-  position: relative;
-  display: flex; justify-content: center; align-items: center;
-  margin-top: clamp(24px, 3vw, 56px); padding: 0 var(--pad);
+  display: flex; justify-content: center; align-items: center; gap: clamp(10px, 1.6vw, 32px);
+  padding: clamp(40px, 5vw, 96px) var(--pad) clamp(24px, 3vw, 56px);
 }
 .contact__word {
-  position: relative; z-index: 1;
   font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
   text-transform: uppercase; line-height: .9; letter-spacing: -0.01em;
-  font-size: clamp(30px, 9.6vw, 196px);
+  font-size: clamp(22px, 4.4vw, 88px);
   transition: transform 1.2s var(--ease-expo), opacity 1.2s var(--ease-expo);
   opacity: 0;
 }
-.contact__word--l { transform: translateX(-12%); }
-.contact__word--r { transform: translateX(12%); }
+.contact__word--l { transform: translateX(-24%); }
+.contact__word--r { transform: translateX(24%); }
 .contact__face {
-  position: relative; z-index: 2; flex: none;
-  width: clamp(120px, 24vw, 460px); aspect-ratio: 4 / 5;
-  margin: 0 calc(clamp(120px, 24vw, 460px) * -0.12);
-  translate: calc(var(--mx) * 10px) calc(var(--my) * 8px);
-  transform: translateY(14%) scale(.92); opacity: 0;
+  position: relative; flex: none; margin: 0;
+  width: clamp(170px, 30vw, 560px); aspect-ratio: 3 / 5;
+  translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
+  transform: translateY(10%) scale(.94); opacity: 0;
   transition: transform 1.3s var(--ease-expo) .08s, opacity 1.3s var(--ease-expo) .08s, translate .7s var(--ease-out);
 }
 .contact.is-in .contact__word, .contact.is-in .contact__face { transform: none; opacity: 1; }
 .contact__face img + .contact__face-ph { display: none; }
-.contact__face img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; }
+.contact__face img { display: block; width: 100%; height: 100%; object-fit: contain; }
 /* stand-in: a head-and-shoulders silhouette in the About section's halftone dots */
 .contact__face-ph {
   width: 100%; height: 100%;
@@ -540,51 +570,26 @@ a:focus-visible, button:focus-visible { outline: none; }
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-.contact__mail {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px;
-  padding: clamp(36px, 4vw, 64px) var(--pad) clamp(56px, 6vw, 104px);
+/* care label */
+.contact__care {
+  display: flex; flex-direction: column; align-items: center; gap: .3em;
+  padding: 0 var(--pad) clamp(56px, 6vw, 104px);
+  text-align: center; font-size: clamp(18px, 1.75vw, 30px); line-height: 1.16; letter-spacing: -0.01em;
 }
-.contact__email {
-  display: inline-flex; align-items: baseline; gap: .3em;
-  font-weight: 400; font-size: clamp(22px, 2.4vw, 42px); letter-spacing: -0.015em;
-  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em;
-  text-decoration-color: color-mix(in srgb, var(--fg) 35%, transparent);
-  transition: text-decoration-color .2s ease;
-}
-.contact__email span { font-size: .7em; display: inline-block; transition: transform .25s var(--ease-out); }
-@media (hover: hover) and (pointer: fine) {
-  .contact__email:hover { text-decoration-color: var(--accent); }
-  .contact__email:hover span { transform: translate(3px, -3px); }
-}
-.contact__email:focus-visible { outline: 1.5px dotted var(--fg); outline-offset: 6px; }
-.contact__copy { align-self: center; }
-.contact__copy.is-done { border-color: var(--accent); color: var(--accent); }
-
-/* one social per column, each a full-width row between hairlines */
-.contact__social {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0; padding: 0; list-style: none;
-  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-}
-.contact__social li { padding-top: 0; padding-bottom: 0; }
-.contact__social a {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: clamp(18px, 1.8vw, 28px) 0;
-  font-size: clamp(12px, .95vw, 15px); letter-spacing: .1em;
-  color: var(--fg-dim); transition: color .15s ease;
-}
-.contact__social a span:last-child { display: inline-block; transition: transform .25s var(--ease-out); }
-@media (hover: hover) and (pointer: fine) {
-  .contact__social a:hover { color: var(--fg); }
-  .contact__social a:hover span:last-child { transform: translate(3px, -3px); color: var(--accent); }
-}
-.contact__social a:focus-visible { color: var(--fg); outline: 1.5px dotted var(--fg); outline-offset: -4px; }
+.contact__care p { margin: 0; }
+.contact__care .caps { text-transform: uppercase; }
+.contact__icons { display: flex; gap: .22em; margin: .1em 0; }
+.contact__icons svg { width: 1.45em; height: 1.45em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.contact__icons text { fill: currentColor; stroke: none; font-family: var(--display); font-weight: 600; font-size: 14px; }
+.contact__icons text.sm { font-size: 9px; }
+.contact__icons .fill { fill: currentColor; stroke: none; }
 
 .contact__base {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center;
-  padding: clamp(22px, 2vw, 32px) 0;
-  color: var(--fg-dim); font-size: clamp(11px, .8vw, 13px); letter-spacing: .1em;
+  padding: clamp(18px, 1.6vw, 26px) 0 clamp(22px, 2vw, 30px);
+  font-size: 13px;
 }
+.contact__base .cell--2 { text-align: center; }
 .contact__base .cell--3 { justify-self: end; }
 
 /* ───────── Responsive ───────── */
@@ -597,12 +602,13 @@ a:focus-visible, button:focus-visible { outline: none; }
   .wl-link { row-gap: 12px; }
   .wl-meta, .wl-side { padding-top: 0; }
   .hover-reveal, .view-cta { display: none; }
-  .contact__top, .contact__social { grid-template-columns: 1fr; }
-  .contact__top { row-gap: 16px; }
-  .contact__social li + li a { border-top: 1px solid var(--line); }
-  .contact__base { grid-template-columns: 1fr 1fr; row-gap: 10px; }
-  .contact__base .cell--2 { display: none; }
-  .contact__base .cell--3 { grid-column: 2; }
+  .contact__cols { grid-template-columns: 1fr 1fr; row-gap: 28px; }
+  .contact__cols .cell--2 { grid-column: 2; }
+  .contact__col--end { grid-column: 1 / -1 !important; align-items: flex-start; text-align: left; }
+  .contact__face { width: clamp(150px, 40vw, 360px); }
+  .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
+  .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
+  .contact__base .cell--3 { grid-column: 2; grid-row: 1; }
 }
 @media (max-width: 640px) {
   .headline { font-size: clamp(28px, 8.4vw, 60px); line-height: .95; }
