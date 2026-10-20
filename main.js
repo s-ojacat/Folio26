@@ -311,54 +311,91 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
   const navH = () => document.querySelector('.bar--top')?.offsetHeight || 0;
 
   /* the envelope, as a function of how much of the footer is uncovered (p, 0..1):
-       0    – .45  it swings in from −90° to 0° as it rides up with the lifting page
-       .45  – .60  the flap opens
-       .55  – .92  the contents spill out one after another, each from inside the envelope,
-                   turning from −90° to its own angle: blue sheet, sketch sheet, blue sheet,
-                   burst, and the face last
-       .84  – .98  the envelope drops away
-       .86  – .99  the stickers land on the face */
+       .02  – .40  it comes in from below the frame into the middle of what's uncovered,
+                   turning −90° → 0° and growing, with everything inside carried along; after
+                   that it stays centred in the visible area as the page lifts
+       .45  – .57  the flap ("Liked my work?") opens; .55 – .75 the envelope swells as it empties
+       .55  – .90  the contents fall out one after another (blue sheet, sketch sheet, blue
+                   sheet, burst, the face last): each leaves from where the envelope holds it,
+                   at the envelope's angle and size, and arcs to its own spot and angle
+       .84  – .99  the empty envelope drops away; the stickers land on the face */
   const face = contact.querySelector('.contact__face');
-  const stickers = [...face.querySelectorAll('.el:not(.spill)')].map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
+  const stickers = [...face.querySelectorAll('.el')].filter((el) => !el.matches('.el--burst'))
+    .map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
   const spill = [
-    { els: [face.querySelector('.paper--blue1')], from: 0.55 },
-    { els: [face.querySelector('.paper--sheet')], from: 0.59 },
-    { els: [face.querySelector('.paper--blue2')], from: 0.63 },
-    { els: [face.querySelector('.el--burst')], from: 0.67 },
-    { els: [face.querySelector('.contact__face-base'), face.querySelector('.contact__face-alt')], from: 0.71 },
-  ].map((s) => ({ ...s, els: s.els.filter(Boolean) }));
-  spill.forEach((s) => s.els.forEach((el) => el.classList.add('spill')));
-  // each piece's path: from the envelope's centre (50%, 53.4% of the face box) to where it rests
+    { sel: '.paper--blue1', from: 0.55, slot: -0.06, tilt: -4 },
+    { sel: '.paper--sheet', from: 0.6, slot: -0.02, tilt: 3 },
+    { sel: '.paper--blue2', from: 0.65, slot: 0.02, tilt: -2 },
+    { sel: '.el--burst', from: 0.7, slot: -0.04, tilt: 6 },
+    { sel: '.contact__face-base, .contact__face-alt', from: 0.74, slot: 0, tilt: 0 },
+  ].map((s) => ({ ...s, els: [...face.querySelectorAll(s.sel)] }));
+  const all = spill.flatMap((s) => s.els.map((el) => ({ el, s })));
+  all.forEach(({ el }) => el.classList.add('spill'));
+  // natural resting box and angle of every piece, in face-box px (JS drives their transform)
+  const rest = new Map();
   function measureSpill() {
+    for (const { el } of all) {
+      el.style.transform = 'none'; el.style.rotate = '';
+      const own = parseFloat(getComputedStyle(el).rotate) || 0;
+      el.style.rotate = 'none';
+      rest.set(el, { L: el.offsetLeft, T: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, own });
+    }
+    envelope(lastP);
+  }
+  const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const smooth = (x) => x * x * (3 - 2 * x);
+  const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
+  let lastP = 0;
+  function envelope(p) {
+    lastP = p;
     const W = face.offsetWidth, H = face.offsetHeight;
-    const ex = W * 0.5, ey = H * 0.534;
-    for (const { els } of spill) for (const el of els) {
-      el.style.setProperty('--dx', `${(ex - (el.offsetLeft + el.offsetWidth / 2)).toFixed(1)}px`);
-      el.style.setProperty('--dy', `${(ey - (el.offsetTop + el.offsetHeight / 2)).toFixed(1)}px`);
+    const cx = W * 0.5, cy = H * 0.534;                         // the envelope's centre at rest
+    const envH = W * 1.54 / 1.55;
+    // enter from below the frame into the middle of the uncovered strip, turning and growing,
+    // then stay centred in the visible area as the page lifts (reaching the true centre at the
+    // end); swell while emptying; drop away once empty
+    const fromTop = face.getBoundingClientRect().top - contact.getBoundingClientRect().top;   // face box, in footer px
+    const Hf = contact.offsetHeight;
+    const stripMid = ((1 - p) * Hf + Hf) / 2 - fromTop;          // middle of what's visible, in face px
+    const follow = Math.max(0, stripMid - cy);
+    const startY = Hf - (fromTop + cy) + envH * 0.45;            // just below the bottom edge
+    const arrive = smooth(span(p, 0.02, 0.35));
+    const drop = smooth(span(p, 0.86, 0.98));
+    const ex = 0, ey = lerp(startY, follow, arrive) + drop * envH * 0.95;
+    const erot = -90 * (1 - smooth(span(p, 0.02, 0.4))) + drop * 7;
+    const es = lerp(0.62, 1, smooth(span(p, 0.02, 0.5))) + 0.12 * smooth(span(p, 0.55, 0.75)) - 0.12 * drop;
+    const flap = smooth(span(p, 0.45, 0.57));
+    face.style.setProperty('--ex', `${ex.toFixed(1)}px`);
+    face.style.setProperty('--ey', `${ey.toFixed(1)}px`);
+    face.style.setProperty('--erot', erot.toFixed(2));
+    face.style.setProperty('--es', es.toFixed(4));
+    face.style.setProperty('--flap', flap.toFixed(4));
+    face.style.setProperty('--drop', drop.toFixed(4));
+    face.classList.toggle('flap-open', flap > 0.5);
+    const rad = (erot * Math.PI) / 180, cos = Math.cos(rad), sin = Math.sin(rad);
+    for (const { el, s } of all) {
+      const r = rest.get(el);
+      if (!r) continue;
+      const k = outCubic(span(p, s.from, s.from + 0.16));
+      // held: in a slot inside the envelope, carried by its position, angle and size
+      const sx = 0, sy = s.slot * envH * es;
+      const hx = cx + ex + (sx * cos - sy * sin), hy = cy + ey + (sx * sin + sy * cos);
+      const ox = r.L + r.w / 2, oy = r.T + r.h / 2;
+      const px = lerp(hx, ox, k), py = lerp(hy, oy, k) - Math.sin(k * Math.PI) * H * 0.08;   // a little arc as it falls out
+      const ang = lerp(erot + s.tilt, r.own, k), sc = lerp(es * 0.38, 1, k);
+      el.style.transform = `translate(${(px - r.L).toFixed(1)}px, ${(py - r.T).toFixed(1)}px) rotate(${ang.toFixed(2)}deg) scale(${sc.toFixed(4)}) translate(${(-r.w / 2).toFixed(1)}px, ${(-r.h / 2).toFixed(1)}px)`;
+    }
+    for (const { el, at } of stickers) {
+      el.style.setProperty('--s', back(span(p, 0.84 + (at - 1) * 0.015, 0.88 + (at - 1) * 0.015)).toFixed(4));
     }
   }
   measureSpill();
   new ResizeObserver(measureSpill).observe(face);
   addEventListener('resize', measureSpill);
   face.querySelectorAll('.letter img').forEach((img) => img.complete || img.addEventListener('load', measureSpill, { once: true }));
-  const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-  const smooth = (x) => x * x * (3 - 2 * x);
-  const outCubic = (x) => 1 - Math.pow(1 - x, 3);
-  const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
-  function envelope(p) {
-    const flap = smooth(span(p, 0.45, 0.6));
-    face.style.setProperty('--erot', (-90 * (1 - outCubic(span(p, 0, 0.45)))).toFixed(2));
-    face.style.setProperty('--flap', flap.toFixed(4));
-    face.style.setProperty('--drop', smooth(span(p, 0.84, 0.98)).toFixed(4));
-    face.classList.toggle('flap-open', flap > 0.5);
-    for (const { els, from } of spill) {
-      const k = outCubic(span(p, from, from + 0.21)).toFixed(4);
-      for (const el of els) el.style.setProperty('--k', k);
-    }
-    for (const { el, at } of stickers) {
-      el.style.setProperty('--s', back(span(p, 0.86 + (at - 1) * 0.015, 0.905 + (at - 1) * 0.015)).toFixed(4));
-    }
-  }
+
 
   const update = () => {
     const H = contact.offsetHeight, W = contact.offsetWidth;
@@ -366,7 +403,6 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     const t = Math.min(Math.max(page.getBoundingClientRect().bottom - footTop, 0), H);   // edge, in footer px
     const shown = t < H - 1;
     contact.classList.toggle('is-shown', shown);
-    contact.querySelector('.contact__face').style.setProperty('--lift', `${(t / 2).toFixed(1)}px`);
     if (shown) {
       const r = Math.min(R, t);
       contact.style.clipPath = t <= 0 ? 'none'
@@ -376,7 +412,7 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     document.body.classList.toggle('on-paper', t < navH());   // the paper is under the nav
     envelope(reduce ? 1 : 1 - t / H);
     // "Let's ... Talk" comes in once the collage has settled
-    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.9)) {
+    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.93)) {
       contact.classList.add('is-in');
       contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
     }
