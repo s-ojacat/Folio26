@@ -241,6 +241,103 @@ a:focus-visible, button:focus-visible { outline: none; }
   object-fit: contain; filter: grayscale(1) contrast(1.18) brightness(1.04);
   transform: translate(calc(-50% + var(--mx) * -4px), calc(var(--my) * -3px));
 }
+/* ID card laid over the collage (after a "creative license" card). Sized in cqw so it
+   scales with the card, and rides the same grow/tilt as the collage underneath. */
+.idcard {
+  position: absolute; z-index: 3; left: 9%; bottom: 2%; width: 84%;
+  container-type: inline-size;
+  rotate: -7deg;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45));
+  pointer-events: none;
+}
+.idcard__frame {
+  --ink: #141414; --paper: #f0ebe1; --blue: #8fb3ff; --navy: #2440b8; --red: #d4473f;
+  position: relative;
+  display: grid; grid-template-columns: 37% 1fr; gap: 0 3cqw;
+  padding: 6.4cqw 3.4cqw 2.6cqw;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E") 0 0 / 120px,
+    var(--paper);
+  background-blend-mode: multiply;
+  border: 1.6cqw solid var(--ink); border-radius: 2.6cqw;
+  box-shadow: 0 0 0 1.1cqw #f6f2ea;   /* the cream rim outside the black frame */
+  color: var(--ink); font-family: var(--mono); text-transform: uppercase;
+  overflow: hidden;
+}
+.idcard__stars { position: absolute; top: .8cqw; left: 4cqw; right: 4cqw; display: flex; justify-content: space-between; color: var(--blue); font-size: 5cqw; line-height: 1; }
+.idcard__stars i { font-style: normal; }
+.idcard__stars i:nth-child(odd) { translate: 0 1cqw; }
+
+/* left column: photo, tag, stamp, barcode */
+.idcard__left { position: relative; display: flex; flex-direction: column; min-width: 0; }
+.idcard__clip { position: absolute; z-index: 2; left: -1.6cqw; top: -4cqw; width: 5cqw; fill: none; stroke: #b9bcc2; stroke-width: 3; stroke-linecap: round; filter: drop-shadow(1px 1px 0 rgba(0,0,0,.3)); }
+.idcard__photo {
+  aspect-ratio: 4 / 4.6; border-radius: .6cqw;
+  /* head and shoulders cropped from the About cutout, on a warm wall */
+  background: url("assets/portrait-cutout.png") 71% 0% / 294% auto no-repeat, linear-gradient(160deg, #d9cfbf, #b9ad9b);
+  box-shadow: inset 0 0 0 .3cqw rgba(0,0,0,.15);
+}
+.idcard__tag {
+  position: relative; z-index: 1; margin: -3cqw -1cqw 0 3cqw; padding: .9cqw 1.6cqw;
+  background: #ee6a3a; color: var(--ink); rotate: -3deg;
+  font-family: var(--display); font-weight: 900; font-stretch: 75%; font-variation-settings: "wdth" 75;
+  font-size: 3.1cqw; line-height: 1; letter-spacing: -.02em; white-space: nowrap;
+}
+.idcard__tag span { font-size: .7em; margin-left: .4em; }
+.idcard__oval {
+  margin: 1cqw 0 0 -1cqw; padding: 1.4cqw 2.4cqw; width: max-content; max-width: 100%;
+  background: #f0b6e2; border: .3cqw solid var(--ink); border-radius: 50%;
+  font-size: 1.25cqw; line-height: 1.25; text-align: center; letter-spacing: .02em; rotate: -6deg;
+}
+.idcard__oval b { display: block; font-family: var(--display); font-weight: 900; font-size: 2.2cqw; letter-spacing: 0; }
+.idcard__barcode {
+  margin-top: auto; height: 6.5cqw;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0 .45cqw, transparent .45cqw .8cqw, var(--ink) .8cqw 1.5cqw, transparent 1.5cqw 1.8cqw,
+    var(--ink) 1.8cqw 2cqw, transparent 2cqw 2.6cqw, var(--ink) 2.6cqw 3.3cqw, transparent 3.3cqw 3.6cqw);
+}
+.idcard__code { margin: .6cqw 0 0; font-size: 2cqw; letter-spacing: .12em; text-align: center; }
+
+/* right column: title, number, fields */
+.idcard__right { position: relative; display: grid; grid-template-columns: 43% 1fr; grid-template-rows: auto 1fr auto auto; column-gap: 2cqw; min-width: 0; }
+.idcard__head, .idcard__foot, .idcard__exp { grid-column: 1 / -1; }
+.idcard__head { display: flex; justify-content: space-between; align-items: flex-start; }
+.idcard__title {
+  margin: 0; font-family: var(--display); font-weight: 900; font-stretch: 100%; font-variation-settings: "wdth" 100;
+  font-size: 7.4cqw; line-height: .82; letter-spacing: -.055em;
+}
+.idcard__title span { font-size: .78em; font-stretch: 75%; font-variation-settings: "wdth" 75; letter-spacing: -.03em; }
+.idcard__no { margin: 0; text-align: right; font-size: 6.2cqw; color: var(--red); letter-spacing: .12em; line-height: 1; }
+.idcard__no span { display: block; color: var(--ink); font-size: 1.7cqw; letter-spacing: .1em; margin-bottom: .6cqw; }
+.idcard__fine { margin: 1.6cqw 0 0; font-size: 1.2cqw; line-height: 1.5; letter-spacing: .1em; text-transform: none; }
+.idcard__stamp {
+  position: absolute; left: 14%; top: 42%; width: 24cqw; height: 14cqw; border-radius: 50%;
+  border: .5cqw solid rgba(110, 150, 240, .55); color: rgba(90, 130, 230, .6);
+  display: grid; place-items: center; rotate: 12deg;
+  font-family: var(--display); font-weight: 900; font-size: 2.6cqw; letter-spacing: .04em;
+}
+.idcard__fields {
+  margin: 1.4cqw 0 0;
+  display: grid; align-self: start; grid-template-columns: 1fr 1fr; border-top: .3cqw solid var(--ink);
+}
+.idcard__fields .f { grid-column: 1 / -1; padding: .6cqw 1cqw .7cqw; border-left: .3cqw solid var(--ink); border-bottom: .3cqw solid var(--ink); }
+.idcard__fields .f--half { grid-column: auto; }
+.idcard__fields dt { font-size: 1.35cqw; letter-spacing: .06em; text-transform: none; }
+.idcard__fields dd { margin: .2cqw 0 0; font-weight: 500; font-size: 2.2cqw; letter-spacing: .08em; }
+.idcard__fields .f--sign dd {
+  margin-top: -1cqw; font-family: "Mrs Saint Delafield", cursive; text-transform: none; letter-spacing: 0;
+  font-size: 6cqw; line-height: 1; color: var(--navy); rotate: -6deg;
+}
+.idcard__foot { grid-row: 3; margin-top: 1.4cqw; display: flex; align-items: flex-end; justify-content: space-between; gap: 2cqw; }
+.idcard__valid { margin: 0; font-size: 1.6cqw; letter-spacing: .1em; font-weight: 500; }
+.idcard__valid span { display: block; font-weight: 400; margin-bottom: .4cqw; }
+.idcard__big {
+  margin: 0; font-family: var(--display); font-weight: 900; font-stretch: 62%; font-variation-settings: "wdth" 62;
+  font-size: 7.6cqw; line-height: .8; letter-spacing: -.01em; word-spacing: .12em; white-space: nowrap;
+}
+.idcard__exp { grid-row: 4; margin: 1.2cqw 0 0; padding: .7cqw 1.2cqw; border: .3cqw solid var(--ink); border-right: 0; font-size: 1.9cqw; letter-spacing: .08em; font-weight: 500; }
+.idcard__exp span { display: block; font-size: 1.35cqw; font-weight: 400; text-transform: none; }
+
 .about__copy { display: flex; flex-direction: column; gap: clamp(28px, 3vw, 56px); padding-top: .2em; }
 .about__lead, .about__sub {
   margin: 0; max-width: 22em;
