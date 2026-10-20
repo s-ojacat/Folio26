@@ -311,23 +311,24 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
   const navH = () => document.querySelector('.bar--top')?.offsetHeight || 0;
 
   /* the envelope, as a function of how much of the footer is uncovered (p, 0..1):
-       .02  – .40  it comes in from below the frame into the middle of what's uncovered,
-                   turning −90° → 0° and growing, with everything inside carried along; after
-                   that it stays centred in the visible area as the page lifts
-       .45  – .57  the flap ("Liked my work?") opens; .55 – .75 the envelope swells as it empties
-       .55  – .90  the contents fall out one after another (blue sheet, sketch sheet, blue
-                   sheet, burst, the face last): each leaves from where the envelope holds it,
-                   at the envelope's angle and size, and arcs to its own spot and angle
-       .84  – .99  the empty envelope drops away; the stickers land on the face */
+       0    – .60  it slides in from the bottom edge, always sized and centred to fit what's
+                   uncovered (so the page never hides it), turning −90° → 0° and growing
+       .15  – .55  the flap opens on the way in; .25 – .62 the contents rise and peek out of
+                   the opening, held in the envelope and turning exactly with it
+       .62  – .80  it swells a little in the middle as it empties
+       .66  – .98  the contents fall out one after another (blue sheet, sketch sheet, blue
+                   sheet, burst, the face last), each from where the envelope holds it, arcing
+                   to its own spot and angle
+       .86  – .99  the empty envelope drops away; the stickers land on the face */
   const face = contact.querySelector('.contact__face');
   const stickers = [...face.querySelectorAll('.el')].filter((el) => !el.matches('.el--burst'))
     .map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
   const spill = [
-    { sel: '.paper--blue1', from: 0.55, slot: -0.06, tilt: -4 },
-    { sel: '.paper--sheet', from: 0.6, slot: -0.02, tilt: 3 },
-    { sel: '.paper--blue2', from: 0.65, slot: 0.02, tilt: -2 },
-    { sel: '.el--burst', from: 0.7, slot: -0.04, tilt: 6 },
-    { sel: '.contact__face-base, .contact__face-alt', from: 0.74, slot: 0, tilt: 0 },
+    { sel: '.paper--blue1', from: 0.66, slot: -0.04, peek: 0.2 },
+    { sel: '.paper--sheet', from: 0.705, slot: -0.02, peek: 0.24 },
+    { sel: '.paper--blue2', from: 0.75, slot: 0.02, peek: 0.16 },
+    { sel: '.el--burst', from: 0.795, slot: -0.02, peek: 0.3 },
+    { sel: '.contact__face-base, .contact__face-alt', from: 0.84, slot: 0.02, peek: 0.36 },
   ].map((s) => ({ ...s, els: [...face.querySelectorAll(s.sel)] }));
   const all = spill.flatMap((s) => s.els.map((el) => ({ el, s })));
   all.forEach(({ el }) => el.classList.add('spill'));
@@ -353,20 +354,27 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     const W = face.offsetWidth, H = face.offsetHeight;
     const cx = W * 0.5, cy = H * 0.534;                         // the envelope's centre at rest
     const envH = W * 1.54 / 1.55;
-    // enter from below the frame into the middle of the uncovered strip, turning and growing,
-    // then stay centred in the visible area as the page lifts (reaching the true centre at the
-    // end); swell while emptying; drop away once empty
+    // the envelope (with its flap, once open) always fits inside the uncovered strip, so the
+    // page above never hides it: it slides in from the bottom edge small and turned, grows as
+    // the strip grows, turns to 0° and opens its flap on the way, reaching the middle at the end
     const fromTop = face.getBoundingClientRect().top - contact.getBoundingClientRect().top;   // face box, in footer px
     const Hf = contact.offsetHeight;
-    const stripMid = ((1 - p) * Hf + Hf) / 2 - fromTop;          // middle of what's visible, in face px
-    const follow = Math.max(0, stripMid - cy);
-    const startY = Hf - (fromTop + cy) + envH * 0.45;            // just below the bottom edge
-    const arrive = smooth(span(p, 0.02, 0.35));
-    const drop = smooth(span(p, 0.86, 0.98));
-    const ex = 0, ey = lerp(startY, follow, arrive) + drop * envH * 0.95;
-    const erot = -90 * (1 - smooth(span(p, 0.02, 0.4))) + drop * 7;
-    const es = lerp(0.62, 1, smooth(span(p, 0.02, 0.5))) + 0.12 * smooth(span(p, 0.55, 0.75)) - 0.12 * drop;
-    const flap = smooth(span(p, 0.45, 0.57));
+    const envW = W * 1.54;
+    const flap = smooth(span(p, 0.15, 0.55));
+    const drop = smooth(span(p, 0.86, 0.99));
+    const turn = -90 * (1 - smooth(span(p, 0, 0.6)));
+    const tr = Math.abs((turn * Math.PI) / 180);
+    const hTot = envH * (1 + 0.58 * flap);                        // body plus the opened flap above it
+    const extent = Math.cos(tr) * hTot + Math.sin(tr) * envW;     // its height on screen at this angle
+    const visible = p * Hf;
+    const fit = Math.min(1, Math.max(0.2, (0.88 * visible) / extent));
+    const es = fit * (1 + 0.1 * smooth(span(p, 0.62, 0.8))) * (1 - 0.12 * drop);
+    // centre the whole shape (flap included) in the strip; never above its resting centre
+    const stripMid = (1 - p) * Hf + visible / 2;
+    const centre = stripMid + 0.29 * flap * envH * es * Math.cos(tr);
+    const ex = 0, ey = Math.max(0, centre - (fromTop + cy)) + drop * envH * 0.95;
+    const erot = turn + drop * 7;
+    const peek = smooth(span(p, 0.25, 0.62));                    // contents rise into the opening
     face.style.setProperty('--ex', `${ex.toFixed(1)}px`);
     face.style.setProperty('--ey', `${ey.toFixed(1)}px`);
     face.style.setProperty('--erot', erot.toFixed(2));
@@ -378,17 +386,18 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     for (const { el, s } of all) {
       const r = rest.get(el);
       if (!r) continue;
-      const k = outCubic(span(p, s.from, s.from + 0.16));
-      // held: in a slot inside the envelope, carried by its position, angle and size
-      const sx = 0, sy = s.slot * envH * es;
+      const k = outCubic(span(p, s.from, s.from + 0.14));
+      // held: in its slot inside the envelope, peeking out of the opening, carried by the
+      // envelope's position, angle and size (so it turns exactly as the envelope turns)
+      const sx = 0, sy = (s.slot - s.peek * peek) * envH * es;
       const hx = cx + ex + (sx * cos - sy * sin), hy = cy + ey + (sx * sin + sy * cos);
       const ox = r.L + r.w / 2, oy = r.T + r.h / 2;
       const px = lerp(hx, ox, k), py = lerp(hy, oy, k) - Math.sin(k * Math.PI) * H * 0.08;   // a little arc as it falls out
-      const ang = lerp(erot + s.tilt, r.own, k), sc = lerp(es * 0.38, 1, k);
+      const ang = lerp(erot, r.own, k), sc = lerp(es * 0.38, 1, k);
       el.style.transform = `translate(${(px - r.L).toFixed(1)}px, ${(py - r.T).toFixed(1)}px) rotate(${ang.toFixed(2)}deg) scale(${sc.toFixed(4)}) translate(${(-r.w / 2).toFixed(1)}px, ${(-r.h / 2).toFixed(1)}px)`;
     }
     for (const { el, at } of stickers) {
-      el.style.setProperty('--s', back(span(p, 0.84 + (at - 1) * 0.015, 0.88 + (at - 1) * 0.015)).toFixed(4));
+      el.style.setProperty('--s', back(span(p, 0.88 + (at - 1) * 0.012, 0.915 + (at - 1) * 0.012)).toFixed(4));
     }
   }
   measureSpill();
