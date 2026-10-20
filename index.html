@@ -343,9 +343,24 @@
     <div class="contact__stage" aria-hidden="true">
       <span class="contact__word contact__word--l">Let’s</span>
       <figure class="contact__face">
-        <!-- local-only stand-in (git-ignored); falls back to the dotted silhouette when it is missing.
-             Replace with the real cutout, e.g. assets/face-cutout.png, once it arrives. -->
-        <img src="assets/face-placeholder.png" alt="" onerror="this.remove()" />
+        <!-- collage after a Bauhaus-style poster: primary shapes behind, re-cut pieces of the
+             face shifted on top. Every piece drifts with the pointer at its own depth (--d) and
+             pops when hovered (main.js sets --mx/--my on the stage). -->
+        <span class="shape shape--line" style="--d:4"></span>
+        <span class="shape shape--circle" style="--d:-14"></span>
+        <span class="shape shape--bar" style="--d:-10"></span>
+        <span class="shape shape--ring" style="--d:-6"></span>
+        <span class="shape shape--tri-b" style="--d:-18"></span>
+        <span class="shape shape--yellow" style="--d:12"></span>
+        <img class="contact__face-base" src="assets/face-cutout.webp" alt="" onerror="this.closest('.contact__face').classList.add('is-missing')" />
+        <span class="frag frag--halftone" style="--l:16;--t:13;--w:46;--h:21;--d:22"><img src="assets/face-cutout.webp" alt="" /></span>
+        <span class="frag frag--red" style="--l:52;--t:2;--w:30;--h:24;--d:28"><img src="assets/face-cutout.webp" alt="" /></span>
+        <span class="frag frag--cheek" style="--l:4;--t:60;--w:30;--h:30;--d:18"><img src="assets/face-cutout.webp" alt="" /></span>
+        <span class="frag frag--eye" style="--l:57;--t:51;--w:34;--h:15;--d:30"><img src="assets/face-cutout.webp" alt="" /></span>
+        <span class="frag frag--lips" style="--l:31;--t:80;--w:38;--h:18;--d:24"><img src="assets/face-cutout.webp" alt="" /></span>
+        <span class="shape shape--tri-r" style="--d:34"></span>
+        <span class="shape shape--dot-r" style="--d:40"></span>
+        <span class="shape shape--dot-b" style="--d:26"></span>
         <div class="contact__face-ph"></div>
       </figure>
       <span class="contact__word contact__word--r">Talk</span>
