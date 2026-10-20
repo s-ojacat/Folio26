@@ -487,59 +487,46 @@ a:focus-visible, button:focus-visible { outline: none; }
 .wl-end { padding: clamp(48px, 6vw, 96px) var(--pad) clamp(96px, 10vw, 160px); }
 
 /* ═════════════════════════ CONTACT ═════════════════════════ */
-/* laid out like aperios-design.co.uk's footer: a solid bar, three columns of links over a
-   dotted rule, now ordered: "Liked my work?", the "LET'S [face] TALK" centrepiece and the email, then the bar,
-   the link columns over a dotted rule, and a thin base row.
-   Quiet grey type throughout, so the face is the only thing in full colour. */
+/* one screen: "Liked my work?", the "LET'S [face] TALK" centrepiece, three links, a thin base row.
+   Background after dipseastories.com's hero: blurred electric-violet folds on a deep plum,
+   rebuilt here as soft gradients that drift slowly; the top fades in from the page colour. */
 .contact {
-  --mute: #9ca0a5;
-  position: relative; z-index: 1;
-  background: var(--bg); color: var(--mute);
+  --plum: #2c0420;
+  position: relative; z-index: 1; isolation: isolate; overflow: hidden;
+  background: var(--plum); color: rgba(255, 255, 255, .78);
   padding-top: calc(var(--nav-h) + 4px);   /* clears the fixed bar when scrolled to the end */
-  /* one screen tall: the face takes whatever height the columns and base row leave */
-  height: 100vh; height: 100svh; min-height: 560px;
+  height: 100vh; height: 100svh; min-height: 520px;
   display: flex; flex-direction: column;
+}
+.contact::before {
+  content: ""; position: absolute; z-index: -1; inset: -20%;
+  background:
+    radial-gradient(38% 13% at 30% 30%, #5a46ff 0, rgba(70, 52, 240, .55) 45%, transparent 75%),
+    radial-gradient(30% 10% at 22% 58%, #4b3af2 0, rgba(60, 44, 220, .5) 45%, transparent 75%),
+    radial-gradient(26% 9% at 66% 22%, #4e3cf5 0, rgba(62, 46, 225, .45) 45%, transparent 75%),
+    radial-gradient(34% 12% at 58% 74%, #3a2bd0 0, rgba(52, 38, 200, .4) 45%, transparent 75%),
+    radial-gradient(20% 7% at 88% 46%, #5040f0 0, transparent 70%),
+    radial-gradient(60% 50% at 50% 50%, #3a0e3c 0, transparent 80%);
+  transform: rotate(-24deg) scale(1.15);
+  filter: blur(34px) saturate(1.1);
+  animation: folds 26s var(--ease-in-out) infinite alternate;
+}
+/* the work section's page colour melts into the plum */
+.contact::after {
+  content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: 0; height: 26%;
+  background: linear-gradient(var(--bg), rgba(15, 17, 17, 0));
+  pointer-events: none;
+}
+@keyframes folds {
+  to { transform: rotate(-16deg) scale(1.28) translate(3%, -2%); }
 }
 .contact a { transition: color .15s ease; }
 @media (hover: hover) and (pointer: fine) { .contact a:hover { color: var(--fg); } }
 .contact a:focus-visible { color: var(--fg); outline: 1.5px dotted var(--fg); outline-offset: 4px; }
 
-.contact__bar { height: clamp(12px, 1.5vw, 30px); margin: 0 var(--pad); background: var(--mute); }
-
-.contact__cols {
-  position: relative;
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end;
-  padding: clamp(14px, 1.4vw, 22px) 0 clamp(16px, 1.6vw, 24px);
-}
-.contact__cols::after {
-  content: ""; position: absolute; left: var(--pad); right: var(--pad); bottom: 0; height: 2px;
-  background: radial-gradient(circle, var(--mute) 0 .9px, transparent 1.2px) 0 0 / 6px 2px repeat-x;
-  opacity: .8;
-}
-.contact__col { align-self: stretch; display: flex; flex-direction: column; }
-.contact__label {
-  display: flex; align-items: center; gap: 8px;
-  margin: 0 0 clamp(14px, 1.4vw, 22px); font-size: 11px; letter-spacing: .08em;
-}
+.contact__label { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 11px; letter-spacing: .08em; }
 .contact__kicker { justify-content: center; margin: clamp(12px, 2vh, 28px) 0 0; font-size: 12px; letter-spacing: .12em; color: var(--fg); }
 .contact__label .dot { width: 7px; height: 7px; background: var(--accent); opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
-.contact__list { margin: 0; padding: 0; list-style: none; }
-.contact__list a, .contact__email {
-  display: inline-flex; align-items: baseline; gap: .25em;
-  font-weight: 400; font-size: clamp(20px, 1.75vw, 30px); line-height: 1.12; letter-spacing: -0.01em;
-}
-.contact__list a span { font-size: .6em; display: inline-block; transition: transform .25s var(--ease-out); }
-@media (hover: hover) and (pointer: fine) { .contact__list a:hover span { transform: translate(2px, -2px); color: var(--accent); } }
-/* email, centred under the stage */
-.contact__mail { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 var(--pad) clamp(16px, 3vh, 40px); }
-.contact__mail .contact__email { font-size: clamp(22px, 2.4vw, 42px); color: var(--fg); }
-.contact__copy { font-size: 11px; letter-spacing: .08em; color: var(--mute);
-  border-bottom: 1px dotted currentColor; padding-bottom: 2px;
-  transition: color .15s ease, transform .16s var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) { .contact__copy:hover { color: var(--fg); } }
-.contact__copy:active { transform: scale(.97); }
-.contact__copy.is-done { color: var(--accent); }
 
 /* "LET'S [face] TALK": the face is the centrepiece; the words sit small on either side.
    On the way in (main.js adds .is-in) the words slide toward the face and the face rises. */
@@ -552,7 +539,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 .contact__word {
   font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
   text-transform: uppercase; line-height: .9; letter-spacing: -0.01em;
-  font-size: clamp(22px, 4.4vw, 88px);
+  font-size: clamp(22px, 4.4vw, 88px); color: #fff;
   transition: transform 1.2s var(--ease-expo), opacity 1.2s var(--ease-expo);
   opacity: 0;
 }
@@ -567,7 +554,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 }
 .contact.is-in .contact__word, .contact.is-in .contact__face { transform: none; opacity: 1; }
 .contact__face img + .contact__face-ph { display: none; }
-.contact__face img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.contact__face img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 24px 48px rgba(20, 0, 30, .55)); }
 /* stand-in: a head-and-shoulders silhouette in the About section's halftone dots */
 .contact__face-ph {
   width: 100%; height: 100%;
@@ -577,9 +564,28 @@ a:focus-visible, button:focus-visible { outline: none; }
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* Gmail · LinkedIn · Instagram, centred under the stage */
+.contact__links {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px clamp(24px, 3.4vw, 56px);
+  margin: 0; padding: 0 var(--pad) clamp(28px, 5vh, 64px); list-style: none;
+}
+.contact__links a {
+  display: inline-flex; align-items: baseline; gap: .25em;
+  font-weight: 400; font-size: clamp(20px, 2.1vw, 36px); letter-spacing: -0.01em; color: #fff;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
+  text-decoration-color: rgba(255, 255, 255, .3);
+  transition: text-decoration-color .2s ease;
+}
+.contact__links a span { font-size: .6em; display: inline-block; transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .contact__links a:hover { text-decoration-color: var(--accent); }
+  .contact__links a:hover span { transform: translate(2px, -2px); color: var(--accent); }
+}
+
 .contact__base {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center;
   padding: clamp(14px, 1.4vw, 22px) 0 clamp(16px, 1.6vw, 24px);
+  border-top: 1px solid rgba(255, 255, 255, .12);
   font-size: 13px;
 }
 .contact__base .cell--2 { text-align: center; }
@@ -595,8 +601,6 @@ a:focus-visible, button:focus-visible { outline: none; }
   .wl-link { row-gap: 12px; }
   .wl-meta, .wl-side { padding-top: 0; }
   .hover-reveal, .view-cta { display: none; }
-  .contact__cols { grid-template-columns: 1fr 1fr; row-gap: 28px; }
-  .contact__cols .cell--2 { grid-column: 2; }
   .contact__face { width: min(44vw, 60cqh); }
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
@@ -614,6 +618,7 @@ a:focus-visible, button:focus-visible { outline: none; }
   .marquee__track { animation: none; }
   .w > span, .about [data-reveal] { transition: none; }
   .contact__word, .contact__face { transition: none; transform: none; opacity: 1; }
+  .contact::before { animation: none; }
   .hover-reveal__inner, .hover-reveal__img { transition: none; }
   .about__media { transform: none; }
 }

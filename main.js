@@ -273,7 +273,7 @@ new IntersectionObserver(([e], io) => {
   io.disconnect();
 }, { threshold: 0.25 }).observe(about);
 
-/* ───────── Contact: headline rises in once, email copies to the clipboard ───────── */
+/* ───────── Contact: "Let's [face] Talk" comes together once, on the way in ───────── */
 const contact = document.querySelector('.contact');
 new IntersectionObserver(([e], io) => {
   if (!e.isIntersecting) return;
@@ -282,19 +282,6 @@ new IntersectionObserver(([e], io) => {
   io.disconnect();
 }, { threshold: 0.2 }).observe(contact);
 
-const copyBtn = contact.querySelector('.contact__copy');
-copyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(copyBtn.dataset.copy);
-    copyBtn.textContent = 'Copied ✓';
-  } catch {
-    copyBtn.textContent = 'Press ⌘C';
-    getSelection().selectAllChildren(contact.querySelector('.contact__email'));
-  }
-  copyBtn.classList.add('is-done');
-  clearTimeout(copyBtn._t);
-  copyBtn._t = setTimeout(() => { copyBtn.textContent = 'Copy email'; copyBtn.classList.remove('is-done'); }, 1800);
-});
 
 // the face drifts a little with the pointer, like the About collage
 const stage = contact.querySelector('.contact__stage');
