@@ -297,7 +297,9 @@
     <div class="contact__stage" aria-hidden="true">
       <span class="contact__word contact__word--l">Let’s</span>
       <figure class="contact__face">
-        <!-- placeholder until the face cutout arrives: swap for <img src="assets/face-cutout.png" alt=""> -->
+        <!-- local-only stand-in (git-ignored); falls back to the dotted silhouette when it is missing.
+             Replace with the real cutout, e.g. assets/face-cutout.png, once it arrives. -->
+        <img src="assets/face-placeholder.png" alt="" onerror="this.remove()" />
         <div class="contact__face-ph"></div>
       </figure>
       <span class="contact__word contact__word--r">Talk</span>
