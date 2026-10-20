@@ -488,13 +488,16 @@ a:focus-visible, button:focus-visible { outline: none; }
 
 /* ═════════════════════════ CONTACT ═════════════════════════ */
 /* laid out like aperios-design.co.uk's footer: a solid bar, three columns of links over a
-   dotted rule, one big centrepiece ("LET'S [face] TALK"), a care label, and a thin base row.
+   dotted rule, one big centrepiece ("LET'S [face] TALK") and a thin base row.
    Quiet grey type throughout, so the face is the only thing in full colour. */
 .contact {
   --mute: #9ca0a5;
   position: relative; z-index: 1;
   background: var(--bg); color: var(--mute);
-  padding-top: clamp(20px, 2vw, 28px);
+  padding-top: calc(var(--nav-h) + 4px);   /* clears the fixed bar when scrolled to the end */
+  /* one screen tall: the face takes whatever height the columns and base row leave */
+  height: 100vh; height: 100svh; min-height: 560px;
+  display: flex; flex-direction: column;
 }
 .contact a { transition: color .15s ease; }
 @media (hover: hover) and (pointer: fine) { .contact a:hover { color: var(--fg); } }
@@ -539,8 +542,9 @@ a:focus-visible, button:focus-visible { outline: none; }
    On the way in (main.js adds .is-in) the words slide toward the face and the face rises. */
 .contact__stage {
   --mx: 0; --my: 0;   /* pointer, -1..1 (main.js) */
+  flex: 1; min-height: 0; container-type: size;
   display: flex; justify-content: center; align-items: center; gap: clamp(10px, 1.6vw, 32px);
-  padding: clamp(40px, 5vw, 96px) var(--pad) clamp(24px, 3vw, 56px);
+  padding: clamp(20px, 3vh, 48px) var(--pad);
 }
 .contact__word {
   font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
@@ -553,7 +557,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 .contact__word--r { transform: translateX(24%); }
 .contact__face {
   position: relative; flex: none; margin: 0;
-  width: clamp(170px, 30vw, 560px); aspect-ratio: 3 / 5;
+  height: 100cqh; width: min(32vw, 60cqh);   /* the cutout is 3:5, so 60% of the height fills it */
   translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
   transform: translateY(10%) scale(.94); opacity: 0;
   transition: transform 1.3s var(--ease-expo) .08s, opacity 1.3s var(--ease-expo) .08s, translate .7s var(--ease-out);
@@ -569,20 +573,6 @@ a:focus-visible, button:focus-visible { outline: none; }
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-
-/* care label */
-.contact__care {
-  display: flex; flex-direction: column; align-items: center; gap: .3em;
-  padding: 0 var(--pad) clamp(56px, 6vw, 104px);
-  text-align: center; font-size: clamp(18px, 1.75vw, 30px); line-height: 1.16; letter-spacing: -0.01em;
-}
-.contact__care p { margin: 0; }
-.contact__care .caps { text-transform: uppercase; }
-.contact__icons { display: flex; gap: .22em; margin: .1em 0; }
-.contact__icons svg { width: 1.45em; height: 1.45em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-.contact__icons text { fill: currentColor; stroke: none; font-family: var(--display); font-weight: 600; font-size: 14px; }
-.contact__icons text.sm { font-size: 9px; }
-.contact__icons .fill { fill: currentColor; stroke: none; }
 
 .contact__base {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center;
@@ -605,7 +595,7 @@ a:focus-visible, button:focus-visible { outline: none; }
   .contact__cols { grid-template-columns: 1fr 1fr; row-gap: 28px; }
   .contact__cols .cell--2 { grid-column: 2; }
   .contact__col--end { grid-column: 1 / -1 !important; align-items: flex-start; text-align: left; }
-  .contact__face { width: clamp(150px, 40vw, 360px); }
+  .contact__face { width: min(44vw, 60cqh); }
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
   .contact__base .cell--3 { grid-column: 2; grid-row: 1; }
