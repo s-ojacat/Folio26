@@ -488,7 +488,8 @@ a:focus-visible, button:focus-visible { outline: none; }
 
 /* ═════════════════════════ CONTACT ═════════════════════════ */
 /* laid out like aperios-design.co.uk's footer: a solid bar, three columns of links over a
-   dotted rule, one big centrepiece ("LET'S [face] TALK") and a thin base row.
+   dotted rule, now ordered: "Liked my work?", the "LET'S [face] TALK" centrepiece and the email, then the bar,
+   the link columns over a dotted rule, and a thin base row.
    Quiet grey type throughout, so the face is the only thing in full colour. */
 .contact {
   --mute: #9ca0a5;
@@ -508,7 +509,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 .contact__cols {
   position: relative;
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end;
-  padding: clamp(18px, 1.6vw, 28px) 0 clamp(22px, 2vw, 32px);
+  padding: clamp(14px, 1.4vw, 22px) 0 clamp(16px, 1.6vw, 24px);
 }
 .contact__cols::after {
   content: ""; position: absolute; left: var(--pad); right: var(--pad); bottom: 0; height: 2px;
@@ -516,11 +517,11 @@ a:focus-visible, button:focus-visible { outline: none; }
   opacity: .8;
 }
 .contact__col { align-self: stretch; display: flex; flex-direction: column; }
-.contact__col--end { align-items: flex-end; justify-content: flex-end; text-align: right; }
 .contact__label {
   display: flex; align-items: center; gap: 8px;
   margin: 0 0 clamp(14px, 1.4vw, 22px); font-size: 11px; letter-spacing: .08em;
 }
+.contact__kicker { justify-content: center; margin: clamp(12px, 2vh, 28px) 0 0; font-size: 12px; letter-spacing: .12em; color: var(--fg); }
 .contact__label .dot { width: 7px; height: 7px; background: var(--accent); opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
 .contact__list { margin: 0; padding: 0; list-style: none; }
 .contact__list a, .contact__email {
@@ -529,8 +530,10 @@ a:focus-visible, button:focus-visible { outline: none; }
 }
 .contact__list a span { font-size: .6em; display: inline-block; transition: transform .25s var(--ease-out); }
 @media (hover: hover) and (pointer: fine) { .contact__list a:hover span { transform: translate(2px, -2px); color: var(--accent); } }
-.contact__copy {
-  margin-top: 10px; font-size: 11px; letter-spacing: .08em; color: var(--mute);
+/* email, centred under the stage */
+.contact__mail { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 var(--pad) clamp(16px, 3vh, 40px); }
+.contact__mail .contact__email { font-size: clamp(22px, 2.4vw, 42px); color: var(--fg); }
+.contact__copy { font-size: 11px; letter-spacing: .08em; color: var(--mute);
   border-bottom: 1px dotted currentColor; padding-bottom: 2px;
   transition: color .15s ease, transform .16s var(--ease-out);
 }
@@ -544,7 +547,7 @@ a:focus-visible, button:focus-visible { outline: none; }
   --mx: 0; --my: 0;   /* pointer, -1..1 (main.js) */
   flex: 1; min-height: 0; container-type: size;
   display: flex; justify-content: center; align-items: center; gap: clamp(10px, 1.6vw, 32px);
-  padding: clamp(20px, 3vh, 48px) var(--pad);
+  padding: clamp(12px, 2.4vh, 36px) var(--pad);
 }
 .contact__word {
   font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
@@ -576,7 +579,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 
 .contact__base {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center;
-  padding: clamp(18px, 1.6vw, 26px) 0 clamp(22px, 2vw, 30px);
+  padding: clamp(14px, 1.4vw, 22px) 0 clamp(16px, 1.6vw, 24px);
   font-size: 13px;
 }
 .contact__base .cell--2 { text-align: center; }
@@ -594,7 +597,6 @@ a:focus-visible, button:focus-visible { outline: none; }
   .hover-reveal, .view-cta { display: none; }
   .contact__cols { grid-template-columns: 1fr 1fr; row-gap: 28px; }
   .contact__cols .cell--2 { grid-column: 2; }
-  .contact__col--end { grid-column: 1 / -1 !important; align-items: flex-start; text-align: left; }
   .contact__face { width: min(44vw, 60cqh); }
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
