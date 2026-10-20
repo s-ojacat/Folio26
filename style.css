@@ -584,167 +584,228 @@ a:focus-visible, button:focus-visible { outline: none; }
 .wl-end { padding: clamp(48px, 6vw, 96px) var(--pad) clamp(96px, 10vw, 160px); }
 
 /* ═════════════════════════ CONTACT ═════════════════════════ */
-/* one screen: "Liked my work?", the "LET'S [face] TALK" centrepiece, three links, a thin base row.
-   Background after dipseastories.com's hero: blurred electric-violet folds on a deep plum,
-   rebuilt here as soft gradients that drift slowly; the top fades in from the page colour. */
+/* one screen, fixed behind the page and uncovered as it scrolls away. On crumpled grid paper
+   (footer-paper.js) a sealed envelope opens as it's revealed: the collage rises out of it, the
+   envelope drops away and the stickers land (all scroll-driven, main.js sets the variables). */
 .contact {
-  --plum: #2c0420;
-  /* fixed behind the page and uncovered as it scrolls away (main.js clips it to the area
-     below the page's bottom edge); hidden until the edge reaches it */
+  --ink: #151515;
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; isolation: isolate; overflow: hidden;
   visibility: hidden; clip-path: inset(100% 0 0 0);
-  color: rgba(255, 255, 255, .78);
+  color: var(--ink);
   padding-top: calc(var(--nav-h) + 4px);   /* clears the fixed bar when scrolled to the end */
   height: 100vh; height: 100svh; min-height: 520px;
   display: flex; flex-direction: column;
 }
 .contact.is-shown { visibility: visible; }
 .contact-spacer { height: 100vh; height: 100svh; min-height: 520px; }
-/* the plum and its folds */
+/* the paper: a printed grid on off-white until the WebGL paper is running */
 .contact__bg {
   position: absolute; z-index: -1; inset: 0; overflow: hidden;
-  background: var(--plum);
-}
-.contact__bg::before {
-  content: ""; position: absolute; inset: -20%;
   background:
-    radial-gradient(38% 13% at 30% 30%, #5a46ff 0, rgba(70, 52, 240, .55) 45%, transparent 75%),
-    radial-gradient(30% 10% at 22% 58%, #4b3af2 0, rgba(60, 44, 220, .5) 45%, transparent 75%),
-    radial-gradient(26% 9% at 66% 22%, #4e3cf5 0, rgba(62, 46, 225, .45) 45%, transparent 75%),
-    radial-gradient(34% 12% at 58% 74%, #3a2bd0 0, rgba(52, 38, 200, .4) 45%, transparent 75%),
-    radial-gradient(20% 7% at 88% 46%, #5040f0 0, transparent 70%),
-    radial-gradient(60% 50% at 50% 50%, #3a0e3c 0, transparent 80%);
-  transform: rotate(-24deg) scale(1.15);
-  filter: blur(34px) saturate(1.1);
-  animation: folds 26s var(--ease-in-out) infinite alternate;
+    repeating-linear-gradient(0deg, rgba(40, 40, 44, .38) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(90deg, rgba(40, 40, 44, .38) 0 1px, transparent 1px 30px),
+    #e9e5dd;
 }
-/* the WebGL folds (footer-fluid.js) replace the CSS ones once they're running */
 .contact__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.contact__bg.has-gl::before { display: none; }
-/* fine film grain over the gradient */
 .contact__bg::after {
   content: ""; position: absolute; inset: 0;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 160px 160px;
-  mix-blend-mode: soft-light; opacity: .55;
+  mix-blend-mode: soft-light; opacity: .22;
 }
-@keyframes folds {
-  to { transform: rotate(-16deg) scale(1.28) translate(3%, -2%); }
-}
+/* the fixed nav turns to ink once the paper reaches the top of the screen */
+.bar--top { transition: color .3s ease, opacity .8s var(--ease-out) .5s; }
+body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
+
 .contact a { transition: color .15s ease; }
-@media (hover: hover) and (pointer: fine) { .contact a:hover { color: var(--fg); } }
-.contact a:focus-visible { color: var(--fg); outline: 1.5px dotted var(--fg); outline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) { .contact a:hover { color: #000; } }
+.contact a:focus-visible { outline: 1.5px dotted currentColor; outline-offset: 4px; }
 
 .contact__label { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 11px; letter-spacing: .08em; }
-.contact__kicker { justify-content: center; margin: clamp(12px, 2vh, 28px) 0 0; font-size: 12px; letter-spacing: .12em; color: var(--fg); }
-.contact__label .dot { width: 7px; height: 7px; background: var(--accent); opacity: 1; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+.contact__kicker { justify-content: center; margin: clamp(12px, 2vh, 28px) 0 0; font-size: 12px; letter-spacing: .12em; color: var(--ink); }
+.contact__label .dot { width: 7px; height: 7px; background: #1fb866; opacity: 1; }
 
-/* "LET'S [face] TALK": the face is the centrepiece; the words sit small on either side.
-   On the way in (main.js adds .is-in) the words slide toward the face and the face rises. */
+/* "LET'S [collage] TALK": the words sit at either edge, the collage in the middle */
 .contact__stage {
   --mx: 0; --my: 0;   /* pointer, -1..1 (main.js) */
   flex: 1; min-height: 0; container-type: size;
-  display: flex; justify-content: center; align-items: center; gap: clamp(10px, 1.6vw, 32px);
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
   padding: clamp(12px, 2.4vh, 36px) var(--pad);
 }
 .contact__word {
+  position: relative; z-index: 6;   /* stays readable over the collage's edges */
   font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
   text-transform: uppercase; line-height: .9; letter-spacing: -0.01em;
-  font-size: clamp(22px, 4.4vw, 88px); color: #fff;
+  font-size: clamp(22px, 4.4vw, 88px); color: var(--ink);
   transition: transform 1.2s var(--ease-expo), opacity 1.2s var(--ease-expo);
   opacity: 0;
 }
 .contact__word--l { transform: translateX(-24%); }
 .contact__word--r { transform: translateX(24%); }
+.contact.is-in .contact__word { transform: none; opacity: 1; }
+
+/* the collage box is the face's own shape; everything else is placed in % of it */
 .contact__face {
-  position: relative; z-index: 1; flex: none; margin: 0;
-  height: min(100cqh, 52vw); aspect-ratio: 380 / 480;   /* the cutout's own shape */
+  --flap: 0; --drop: 0;   /* scroll-driven, 0..1 (main.js) */
+  position: relative; z-index: 5; flex: none; margin: 0;   /* above the links while the envelope rides low */
+  height: min(68cqh, 34vw); aspect-ratio: 380 / 480;
   translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
-  transform: translateY(10%) scale(.94); opacity: 0;
-  transition: transform 1.3s var(--ease-expo) .08s, opacity 1.3s var(--ease-expo) .08s, translate .7s var(--ease-out);
-}
-.contact.is-in .contact__word, .contact.is-in .contact__face { transform: none; opacity: 1; }
-.contact__word { position: relative; z-index: 3; }
-.contact__face-base {
-  position: relative; z-index: 1; display: block; width: 100%; height: 100%;
-  /* film grain (the #face-grain SVG filter in index.html), a touch more bite, then the shadow */
-  filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 24px 48px rgba(20, 0, 30, .55));
+  transform: translateY(var(--lift, 0px));   /* rides up with the lifting page */
+  transition: translate .7s var(--ease-out);
 }
 
-/* hover (or tap) shows the second frame */
-.contact__face-alt {
+/* ── the envelope: back, pocket and flap share one rectangle and drop away together ── */
+.env {
+  position: absolute; left: -27%; top: 14%; width: 154%; aspect-ratio: 1.55;
+  pointer-events: none;
+  transform: translateY(calc(var(--drop) * 95%)) rotate(calc(var(--drop) * 7deg));
+  opacity: calc(1 - var(--drop) * 1.25);
+}
+.env__back {
+  z-index: 1; border-radius: 1.4%;
+  background: linear-gradient(170deg, #e9dec8, #d8c9ab);
+  box-shadow: 0 30px 60px rgba(70, 50, 20, .32), inset 0 0 0 1px rgba(0, 0, 0, .05);
+}
+.env__pocket {
+  z-index: 3;
+  /* side flaps and bottom flap, with their fold lines */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 155 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0L77.5 52L0 100Z' fill='%23e4d7bc'/%3E%3Cpath d='M155 0L77.5 52L155 100Z' fill='%23e1d3b6'/%3E%3Cpath d='M0 100L77.5 46L155 100Z' fill='%23efe5d0' stroke='%23000' stroke-opacity='.07' stroke-width='.4'/%3E%3C/svg%3E") 0 0 / 100% 100%;
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  border-radius: 1.4%;
+}
+.env__note {
+  position: absolute; left: 0; right: 0; bottom: 9%; margin: 0;
+  display: flex; flex-direction: column; align-items: center; gap: .3em;
+  font-family: var(--mono); font-size: clamp(7px, .62vw, 11px); letter-spacing: .14em; text-transform: uppercase; color: #5b4f3a;
+}
+.env__note b { font-family: "Mrs Saint Delafield", cursive; font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 4.6em; line-height: .9; color: #24408f; rotate: -4deg; }
+.env__flap { z-index: 4; perspective: 1400px; filter: drop-shadow(0 3px 4px rgba(60, 40, 10, .22)); }
+.contact__face.flap-open .env__flap { z-index: 1; }   /* once past upright it falls behind the letter */
+.env__flap-in {
+  position: absolute; inset: 0; transform-origin: 50% 0;
+  transform: rotateX(calc(var(--flap) * 180deg));
+  clip-path: polygon(0 0, 100% 0, 50% 58%);
+  background: linear-gradient(180deg, #f2e8d4, #e2d4b6);
+}
+.env__seal {
+  position: absolute; left: 50%; top: 47%; width: 13%; translate: -50% -50%;
+  opacity: calc(1 - var(--flap) * 4);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .3));
+}
+
+/* ── the letter: everything that comes out of the envelope ── */
+.letter { position: absolute; inset: 0; z-index: 2; transform-origin: 50% 55%; transform: translateY(var(--ly, 0%)) scale(var(--ls, 1)); }
+.contact__face-base {
+  position: relative; z-index: 2; display: block; width: 100%; height: 100%;
+  filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 18px 30px rgba(40, 30, 20, .35));
+}
+.contact__face-alt {   /* hover (or tap) shows the second frame */
   position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%;
   opacity: 0; transition: opacity .12s linear;
-  filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 24px 48px rgba(20, 0, 30, .55));
+  filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 18px 30px rgba(40, 30, 20, .35));
 }
 @media (hover: hover) and (pointer: fine) { .contact__face:hover .contact__face-alt { opacity: 1; } }
 .contact__face.is-alt .contact__face-alt { opacity: 1; }
 
-/* scrapbook cutouts around the face, placed in % of the face box (they can run past it).
-   Each rides the pointer at its own depth (--d) and pops when hovered. */
+/* sheets behind the face: two pale blue pages and a printed sketch sheet */
+.paper { position: absolute; z-index: 0; box-shadow: 0 10px 22px rgba(40, 40, 60, .16); }
+.paper--blue1 { left: -32%; top: 8%; width: 96%; height: 96%; rotate: -7deg; background: linear-gradient(165deg, #e3ecf8, #c3d5ec); }
+.paper--blue2 { left: -4%; top: 36%; width: 110%; height: 84%; rotate: 5deg; background: linear-gradient(200deg, #d8e5f5, #b6cbe7); }
+.paper--sheet {
+  left: -20%; top: 26%; width: 84%; height: 86%; rotate: -24deg;
+  background:
+    linear-gradient(#2a2a2a, #2a2a2a) 8% 14% / 84% 1.5px no-repeat,
+    repeating-linear-gradient(0deg, rgba(30, 30, 30, .32) 0 1px, transparent 1px 7.2%) 8% 22% / 84% 70% no-repeat,
+    repeating-linear-gradient(90deg, rgba(30, 30, 30, .32) 0 1px, transparent 1px 12%) 8% 22% / 84% 70% no-repeat,
+    #f7f4ec;
+}
+.paper--sheet i {
+  position: absolute; left: 8%; top: 6%; font-style: normal;
+  font-family: var(--mono); font-size: clamp(5px, .5vw, 9px); letter-spacing: .14em; text-transform: uppercase; color: #333;
+}
+
+/* cutouts: placed in % of the face box; each rides the pointer at its own depth (--d), lands
+   with a pop as the envelope empties (--s from main.js) and pops again when hovered */
 .contact__face .el {
   position: absolute; z-index: 3; display: block;
   left: var(--x); top: var(--y); width: var(--w);
   rotate: var(--r, 0deg);
   translate: calc(var(--mx) * var(--d) * 1px) calc(var(--my) * var(--d) * .8px);
-  filter: drop-shadow(0 10px 16px rgba(12, 0, 24, .45));
+  transform: scale(var(--s, 1)); opacity: min(1, calc(var(--s, 1) * 3));
+  filter: drop-shadow(0 8px 12px rgba(40, 30, 20, .32));
   transition: translate .9s var(--ease-out), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
 }
-.contact__face .el img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.contact__face .el img, .contact__face .el svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 @media (hover: hover) and (pointer: fine) {
   .contact__face .el:hover { scale: 1.1; rotate: calc(var(--r, 0deg) + 7deg); }
   .contact__face .el:nth-of-type(even):hover { rotate: calc(var(--r, 0deg) - 8deg); }
 }
-.el--burst  { --x: -26%; --y: -12%; --w: 52%; --r: -8deg; z-index: 0 !important; filter: none !important; }
-.el--tape   { --x: -4%;  --y: 4%;   --w: 46%; --r: -32deg; }
-.el--bubble { --x: 70%;  --y: -8%;  --w: 50%; --r: 7deg; }
-.el--bubble b {
-  position: absolute; left: 0; right: 0; top: 36%; text-align: center;
-  font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
-  text-transform: uppercase; color: #2a1d05; font-size: clamp(10px, 1.25vw, 22px); letter-spacing: -.01em;
+.el--clip   { --x: -24%; --y: 20%; --w: 22%; --r: -32deg; z-index: 1 !important; }
+.el--burst  { --x: 64%;  --y: -6%; --w: 62%; --r: 8deg; z-index: 1 !important; }
+.contact__face .el--burst {   /* the yellow burst, recast in red: its shape as a mask, its texture multiplied in */
+  background: #e3261b;
+  -webkit-mask: url("assets/collage/burst.webp") 0 0 / 100% 100% no-repeat;
+          mask: url("assets/collage/burst.webp") 0 0 / 100% 100% no-repeat;
 }
-.el--star   { --x: 88%;  --y: 24%;  --w: 22%; --r: 14deg; }
-.el--puzzle { --x: -34%; --y: 60%;  --w: 38%; --r: -16deg; }
-.el--mouth  { --x: 72%;  --y: 62%;  --w: 38%; --r: 9deg; }
-.el--arrow  { --x: 8%;   --y: 80%;  --w: 12%; --r: -10deg; filter: drop-shadow(0 6px 10px rgba(12, 0, 24, .5)); }
-.el--arrow img, .el--hand img { image-rendering: pixelated; }
-.el--hand   { --x: 92%;  --y: 92%;  --w: 15%; --r: 8deg; }
+.contact__face .el--burst img { filter: grayscale(1) brightness(1.2) contrast(1.5); mix-blend-mode: multiply; }
+.el--puzzle { --x: 12%;  --y: 13%; --w: 24%; --r: -12deg; }
+.el--mouth  { --x: 27%;  --y: 62%; --w: 46%; --r: 2deg; }
+.el--star1  { --x: 72%;  --y: 30%; --w: 17%; --r: 10deg; }
+.el--star2  { --x: 86%;  --y: 50%; --w: 15%; --r: -12deg; }
+.el--star3  { --x: -2%;  --y: 84%; --w: 16%; --r: 16deg; }
+.el--silver { --x: -18%; --y: 50%; --w: 14%; --r: -8deg; }
+.contact__face .el--silver img { filter: grayscale(1) brightness(1.45) contrast(1.15); }
+.el--arrow  { --x: 84%;  --y: 96%; --w: 15%; --r: -6deg; }
+.el--arrow img { image-rendering: pixelated; }
+/* the left eye, cut from the photo itself and printed black on yellow */
+.contact__face .el--eye {
+  --x: calc(var(--fl) * 1%); --y: calc(var(--ft) * 1%); --w: calc(var(--fw) * 1%);
+  height: calc(var(--fh) * 1%); overflow: hidden;
+  clip-path: ellipse(50% 47% at 50% 50%);
+  filter: none;
+}
+.contact__face .el--eye img {
+  position: absolute; max-width: none;
+  width: calc(100% * 100 / var(--fw)); height: calc(100% * 100 / var(--fh));
+  left: calc(-100% * var(--fl) / var(--fw)); top: calc(-100% * var(--ft) / var(--fh));
+  filter: url(#eye-duo);
+}
 
-/* if the cutout fails to load, fall back to the dotted silhouette alone */
+/* if the face fails to load, fall back to the dotted silhouette alone */
 .contact__face-ph { display: none; }
-.contact__face.is-missing > :not(.contact__face-ph) { display: none; }
+.contact__face.is-missing .letter > :not(.contact__face-ph) { display: none; }
 .contact__face.is-missing .contact__face-ph { display: block; }
-/* stand-in: a head-and-shoulders silhouette in the About section's halftone dots */
 .contact__face-ph {
   width: 100%; height: 100%;
-  background: radial-gradient(circle, rgba(255, 255, 255, .8) 0 36%, transparent 40%) 0 0 / 9px 9px;
-  opacity: .55;
+  background: radial-gradient(circle, rgba(0, 0, 0, .55) 0 36%, transparent 40%) 0 0 / 9px 9px;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 /* Gmail · LinkedIn · Instagram, centred under the stage */
 .contact__links {
+  position: relative; z-index: 4;
   display: flex; flex-wrap: wrap; justify-content: center; gap: 8px clamp(20px, 2.4vw, 40px);
   margin: 0; padding: 0 var(--pad) clamp(28px, 5vh, 64px); list-style: none;
 }
 .contact__links a {
   display: inline-flex; align-items: baseline; gap: .25em;
-  font-weight: 400; font-size: clamp(15px, 1.15vw, 20px); letter-spacing: 0; color: #fff;
+  font-weight: 400; font-size: clamp(15px, 1.15vw, 20px); letter-spacing: 0; color: var(--ink);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
-  text-decoration-color: rgba(255, 255, 255, .3);
+  text-decoration-color: rgba(0, 0, 0, .3);
   transition: text-decoration-color .2s ease;
 }
 .contact__links a span { font-size: .6em; display: inline-block; transition: transform .25s var(--ease-out); }
 @media (hover: hover) and (pointer: fine) {
-  .contact__links a:hover { text-decoration-color: var(--accent); }
-  .contact__links a:hover span { transform: translate(2px, -2px); color: var(--accent); }
+  .contact__links a:hover { text-decoration-color: #1f5bd8; }
+  .contact__links a:hover span { transform: translate(2px, -2px); color: #1f5bd8; }
 }
 
 .contact__base {
+  position: relative; z-index: 4;
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center;
   padding: clamp(14px, 1.4vw, 22px) 0 clamp(16px, 1.6vw, 24px);
-  border-top: 1px solid rgba(255, 255, 255, .12);
-  font-size: 13px;
+  border-top: 1px solid rgba(0, 0, 0, .12);
+  font-size: 13px; color: rgba(21, 21, 21, .7);
 }
 .contact__base .cell--2 { text-align: center; }
 .contact__base .cell--3 { justify-self: end; }
@@ -759,8 +820,10 @@ a:focus-visible, button:focus-visible { outline: none; }
   .wl-link { row-gap: 12px; }
   .wl-meta, .wl-side { padding-top: 0; }
   .hover-reveal, .view-cta { display: none; }
-  .contact__stage { gap: 0; }
-  .contact__face { height: min(100cqh, 72vw); margin: 0 -5vw; }
+  /* phones: LET'S above the collage, TALK below it */
+  .contact__stage { flex-direction: column; justify-content: center; gap: 2vh; }
+  .contact__face { height: min(54cqh, 62vw); }
+  .contact__word--r { margin-top: 6cqh; }   /* clear of the sheets that hang below the face */
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
   .contact__base .cell--3 { grid-column: 2; grid-row: 1; }
@@ -776,8 +839,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   .marquee__track { animation: none; }
   .w > span, .about [data-reveal] { transition: none; }
-  .contact__word, .contact__face { transition: none; transform: none; opacity: 1; }
-  .contact__bg::before { animation: none; }
+  .contact__word { transition: none; transform: none; opacity: 1; }
   .hover-reveal__inner, .hover-reveal__img { transition: none; }
   .about__media { transform: none; }
 }

@@ -1,45 +1,79 @@
-// Footer background: violet folds on deep plum (after dipseastories.com's hero), drawn in a
-// shader as slowly drifting, domain-warped noise, plus the hero's pointer fluid, which warps it
-// with the same rainbow-edged smear. The pointer pushes velocity into a small grid sim; the
-// display pass samples the folds along that velocity.
+// Footer background: crumpled grid paper, generated in a shader at the screen's full pixel
+// density (so it stays crisp), plus the hero's pointer fluid, which smears it like liquid.
+// The paper is static, so it is drawn once into a texture; after that only the fluid and the
+// display pass run, and only while the pointer has stirred it recently.
 import * as THREE from 'three';
 import { QUAD_VERT, SPLAT_FRAG, DIVERGENCE_FRAG, PRESSURE_FRAG, GRADIENT_FRAG, ADVECT_FRAG, SCALE_FRAG } from './hero.js';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// colours are linear: plum #2c0420, magenta #5a0e4a, violet #4b3af2, highlight #7a6bff
-const FIELD_FRAG = /* glsl */`
-uniform float uTime; uniform float uAspect;
+/* crumpled paper: smooth-voronoi facets, each tilted its own way (two scales), lit from the
+   top left; darker creases where cells meet; a grid printed on it that kinks with the folds */
+const PAPER_FRAG = /* glsl */`
+uniform vec2 uRes; uniform float uPx;
 varying vec2 vUv;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-  vec2 i = floor(p), f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+vec2 hash2(vec2 p) {
+  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+  return fract(sin(p) * 43758.5453);
 }
-float fbm(vec2 p) {
-  float v = 0.0, a = 0.5;
-  mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
-  for (int i = 0; i < 5; i++) { v += a * noise(p); p = m * p; a *= 0.5; }
-  return v;
+float hash1(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+// facet tilt (xy) of the nearest cell, eased toward the next cell only right at the crease,
+// plus crease strength (z): flat planes with straight, soft-edged folds between them
+vec3 facets(vec2 x, float crease) {
+  vec2 n = floor(x), f = fract(x);
+  float d1 = 8.0, d2 = 8.0; vec2 t1 = vec2(0.0), t2 = vec2(0.0);
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+    vec2 g = vec2(float(i), float(j));
+    vec2 o = hash2(n + g);
+    vec2 r = g + o - f;
+    float d = dot(r, r);
+    vec2 t = hash2(n + g + 17.31) * 2.0 - 1.0;
+    if (d < d1) { d2 = d1; t2 = t1; d1 = d; t1 = t; } else if (d < d2) { d2 = d; t2 = t; }
+  }
+  float edge = (d2 - d1) / (2.0 * sqrt(d2) + 1e-4);   // ~distance to the cell border
+  float k = 1.0 - smoothstep(0.0, crease, edge);
+  return vec3(mix(t1, (t1 + t2) * 0.5, k), 1.0 - smoothstep(0.0, crease * 0.6, edge));
+}
+// a few long straight folds across the whole sheet
+vec2 folds(vec2 p) {
+  vec2 t = vec2(0.0);
+  for (int i = 0; i < 5; i++) {
+    float fi = float(i);
+    vec2 dir = normalize(vec2(cos(fi * 2.39 + 0.6), sin(fi * 2.39 + 0.6)));
+    vec2 c = (hash2(vec2(fi, 3.7)) - 0.5) * 2.2;
+    float s = dot(p - c, dir);
+    t += dir * 0.35 * smoothstep(-0.025, 0.025, s) * (mod(fi, 2.0) * 2.0 - 1.0);
+  }
+  return t;
 }
 void main() {
-  vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
-  float c = cos(-0.42), s = sin(-0.42);
-  p = mat2(c, -s, s, c) * p;
-  p *= vec2(0.8, 2.0);                       // long diagonal folds
-  float t = uTime * 0.018;                   // very slow
-  vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3) - t));
-  vec2 r = vec2(fbm(p + 2.6 * q + vec2(1.7, 9.2) + 0.7 * t), fbm(p + 2.6 * q + vec2(8.3, 2.8) - 0.6 * t));
-  float v = fbm(p + 2.4 * r);
-  vec3 col = vec3(0.0252, 0.0012, 0.0144);
-  col = mix(col, vec3(0.102, 0.0044, 0.069), smoothstep(0.55, 0.95, length(q)) * 0.55);
-  col = mix(col, vec3(0.0703, 0.0423, 0.888) * 0.6, smoothstep(0.4, 0.66, v));
-  col = mix(col, vec3(0.195, 0.147, 1.0) * 0.78, smoothstep(0.6, 0.84, v) * 0.7);
-  gl_FragColor = vec4(col, 1.0);
+  vec2 px = vUv * uRes / uPx;                       // CSS pixels
+  vec2 p = px / 300.0;                              // facets ~300px across
+  vec3 a = facets(p, 0.05);
+  vec3 b = facets(p * 2.6 + 7.7, 0.07);
+  vec2 tilt = a.xy * 0.7 + b.xy * 0.3 + folds((vUv - 0.5) * vec2(uRes.x / uRes.y, 1.0));
+  vec3 nrm = normalize(vec3(-tilt * 0.55, 1.0));
+  vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
+  float lit = dot(nrm, L);
+
+  vec3 paper = vec3(0.95, 0.94, 0.918);
+  vec3 col = paper * (0.83 + 0.22 * lit);
+  col *= 1.0 - 0.045 * a.z - 0.025 * b.z;           // crease lines
+
+  // printed grid, 30px, displaced a little by the fold under it
+  vec2 g = px + tilt * 3.5;
+  vec2 gv = abs(fract(g / 30.0 - 0.5) - 0.5) * 30.0;
+  float aa = max(fwidth(g.x), fwidth(g.y)) * 0.75 + 0.3;
+  float line = max(1.0 - smoothstep(0.35, 0.35 + aa, gv.x), 1.0 - smoothstep(0.35, 0.35 + aa, gv.y));
+  col = mix(col, col * vec3(0.42, 0.42, 0.44), line * 0.5);
+
+  // paper grain and a soft vignette
+  col += (hash1(floor(px * 1.5)) - 0.5) * 0.028;
+  col *= 1.0 - 0.1 * pow(length(vUv - 0.5) * 1.25, 2.4);
+  gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 1.0);   // to linear
 }`;
 
-// warps the folds along the velocity field; fast flow gets a rainbow edge (as in the hero)
+// warps the paper along the velocity field, with a faint colour fringe on fast flow
 const DISPLAY_FRAG = /* glsl */`
 uniform sampler2D uField; uniform sampler2D uVel; uniform vec2 uSimSize; uniform float uStrength;
 varying vec2 vUv;
@@ -54,22 +88,21 @@ void main() {
     wsum += w;
   }
   col /= max(wsum, vec3(1e-4));
-  col += mix(vec3(0.35, 0.2, 1.0), vec3(1.0, 0.25, 0.6), sin(m * 14.0) * 0.5 + 0.5) * smoothstep(0.02, 0.09, m) * 0.08;
+  col += mix(vec3(0.25, 0.3, 0.9), vec3(0.9, 0.3, 0.45), sin(m * 14.0) * 0.5 + 0.5) * smoothstep(0.02, 0.09, m) * 0.05;
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }`;
 
-export function startFooterFluid({ host, events }) {
+export function startFooterPaper({ host, events }) {
   const canvas = document.createElement('canvas');
   canvas.className = 'contact__gl';
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'low-power' });
-  } catch { return null; }   // no WebGL: the CSS gradient stays
+  } catch { return null; }   // no WebGL: the CSS paper stays
   host.prepend(canvas);
   host.classList.add('has-gl');
-  // the folds are soft, so a reduced buffer is plenty and keeps this cheap
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2) * 0.45);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));   // full density: the grid must stay sharp
   renderer.autoClear = false;
 
   const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -81,10 +114,10 @@ export function startFooterFluid({ host, events }) {
   const pass = (material, target) => { quad.material = material; renderer.setRenderTarget(target); renderer.render(quadScene, quadCam); };
   const rt = (w, h, opts = {}) => new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, ...opts });
 
-  const fieldMat = shader(FIELD_FRAG, { uTime: { value: 0 }, uAspect: { value: 1 } });
-  let field = rt(1, 1, { type: THREE.HalfFloatType });
+  const paperMat = shader(PAPER_FRAG, { uRes: { value: new THREE.Vector2(1, 1) }, uPx: { value: 1 } });
+  const paper = rt(1, 1, { type: THREE.HalfFloatType });
 
-  /* fluid (same solver as the hero, at a coarser grid) */
+  /* fluid (same solver as the hero) */
   const SIM = 128;
   let simW = SIM, simH = SIM;
   const half = { type: THREE.HalfFloatType };
@@ -96,36 +129,46 @@ export function startFooterFluid({ host, events }) {
   const gradMat = shader(GRADIENT_FRAG, { uPressure: { value: null }, uVel: { value: null }, uTexel: { value: texel } });
   const advMat = shader(ADVECT_FRAG, { uVel: { value: null }, uTexel: { value: texel }, uDt: { value: 1 / 60 }, uDissipation: { value: 3 } });
   const scaleMat = shader(SCALE_FRAG, { uTex: { value: null }, uScale: { value: 0.8 } });
-  const displayMat = shader(DISPLAY_FRAG, { uField: { value: null }, uVel: { value: null }, uSimSize: { value: new THREE.Vector2(SIM, SIM) }, uStrength: { value: 0.3 } });
+  const displayMat = shader(DISPLAY_FRAG, { uField: { value: paper.texture }, uVel: { value: null }, uSimSize: { value: new THREE.Vector2(SIM, SIM) }, uStrength: { value: 0.3 } });
   const swap = (a) => { const t = a[0]; a[0] = a[1]; a[1] = t; };
 
   let W = 1, H = 1;
+  function draw() {
+    displayMat.uniforms.uVel.value = vel[0].texture;
+    pass(displayMat, null);
+  }
   function resize() {
     W = host.clientWidth || 1; H = host.clientHeight || 1;
     renderer.setSize(W, H, false);
     const dpr = renderer.getPixelRatio();
-    field.setSize(Math.max(1, Math.round(W * dpr)), Math.max(1, Math.round(H * dpr)));
+    paper.setSize(Math.round(W * dpr), Math.round(H * dpr));
+    paperMat.uniforms.uRes.value.set(W * dpr, H * dpr);
+    paperMat.uniforms.uPx.value = dpr;
     const aspect = W / H;
     simW = aspect >= 1 ? SIM : Math.round(SIM * aspect);
     simH = aspect >= 1 ? Math.round(SIM / aspect) : SIM;
     [...vel, ...prs, div].forEach((t) => t.setSize(simW, simH));
     texel.set(1 / simW, 1 / simH);
     splatMat.uniforms.uAspect.value = aspect;
-    fieldMat.uniforms.uAspect.value = aspect;
     displayMat.uniforms.uSimSize.value.set(simW, simH);
+    pass(paperMat, paper);   // the paper itself only changes with the size
+    draw();
   }
   new ResizeObserver(resize).observe(host);
   resize();
+  if (reduceMotion) return { setActive() {} };
 
   /* pointer → fluid */
   const splat = { x: 0.5, y: 0.5, dx: 0, dy: 0, has: false };
-  let lastPx = null;
+  let lastPx = null, stirredAt = -1e9;
   events.addEventListener('pointermove', (e) => {
     const r = host.getBoundingClientRect();
     const x = e.clientX - r.left, y = e.clientY - r.top;
     if (lastPx) { splat.dx += x - lastPx.x; splat.dy += y - lastPx.y; }
     lastPx = { x, y };
     splat.x = x / r.width; splat.y = 1 - y / r.height; splat.has = true;
+    stirredAt = performance.now();
+    wake();
   });
   events.addEventListener('pointerleave', () => { lastPx = null; });
 
@@ -157,32 +200,24 @@ export function startFooterFluid({ host, events }) {
     pass(advMat, vel[1]); swap(vel);
   }
 
-  function render(t, dt) {
-    fieldMat.uniforms.uTime.value = t;
-    pass(fieldMat, field);
-    if (!reduceMotion) stepFluid(dt);
-    displayMat.uniforms.uField.value = field.texture;
-    displayMat.uniforms.uVel.value = vel[0].texture;
-    pass(displayMat, null);
-  }
-
-  // static for reduced motion; otherwise animate only while the footer is on screen
-  const T0 = 40;   // start mid-drift rather than from the noise's origin
-  if (reduceMotion) { render(T0, 0); return { setActive() {} }; }
-  const clock = new THREE.Clock(false);
-  let raf = 0, time = T0;
-  const loop = () => {
-    raf = requestAnimationFrame(loop);
-    const dt = Math.min(clock.getDelta(), 1 / 30);
-    time += dt;
-    render(time, dt);
+  // run only while the footer is uncovered and the fluid is still settling (~3s after a stir);
+  // when idle the canvas simply keeps its last frame
+  let active = false, raf = 0, last = 0;
+  const loop = (now) => {
+    const dt = Math.min((now - last) / 1000 || 1 / 60, 1 / 30);
+    last = now;
+    stepFluid(dt);
+    draw();
+    raf = active && now - stirredAt < 3000 ? requestAnimationFrame(loop) : 0;
   };
-  render(time, 0);
-  // the page tells us when the footer is uncovered; animate only then
+  function wake() {
+    if (active && !raf) { last = performance.now(); raf = requestAnimationFrame(loop); }
+  }
   return {
     setActive(on) {
-      if (on && !raf) { clock.start(); loop(); }
-      else if (!on && raf) { cancelAnimationFrame(raf); raf = 0; clock.stop(); }
+      active = on;
+      if (on) wake();
+      else if (raf) { cancelAnimationFrame(raf); raf = 0; }
     },
   };
 }

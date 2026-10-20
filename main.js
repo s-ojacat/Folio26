@@ -1,5 +1,5 @@
 import { startHero } from './hero.js';
-import { startFooterFluid } from './footer-fluid.js';
+import { startFooterPaper } from './footer-paper.js';
 
 const canvas = document.querySelector('.hero__gl');
 const hero = document.querySelector('.hero');
@@ -298,7 +298,7 @@ if (!matchMedia('(hover: hover) and (pointer: fine)').matches) {
 }
 
 /* ───────── Contact: slowly flowing folds, stirred by the pointer like the hero ───────── */
-const fluid = startFooterFluid({ host: contact.querySelector('.contact__bg'), events: contact });
+const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), events: contact });
 
 /* ───────── Contact: revealed from under the page ─────────
    The footer is fixed to the bottom of the screen; the page above scrolls up off it over a
@@ -307,20 +307,54 @@ const fluid = startFooterFluid({ host: contact.querySelector('.contact__bg'), ev
 {
   const page = document.querySelector('main');
   const R = 44;   // corner radius of the lifting edge
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const navH = () => document.querySelector('.bar--top')?.offsetHeight || 0;
+
+  /* the envelope, as a function of how much of the footer is uncovered (p, 0..1):
+       0    – .50  sealed, riding up with the lifting page
+       .50  – .68  the flap swings open
+       .60  – .86  the letter rises out of the pocket
+       .78  – .95  the envelope drops away, the letter settles to full size
+       .84  – 1    the stickers land, one after another */
+  const face = contact.querySelector('.contact__face');
+  const letter = face.querySelector('.letter');
+  const stickers = [...face.querySelectorAll('.el')].map((el) => ({ el, at: +getComputedStyle(el).getPropertyValue('--at') || 0 }));
+  const span = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const smooth = (x) => x * x * (3 - 2 * x);
+  const back = (x) => { const c = 1.9; return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // overshoot
+  function envelope(p) {
+    const flap = smooth(span(p, 0.5, 0.68));
+    const rise = smooth(span(p, 0.6, 0.86));
+    const settle = smooth(span(p, 0.78, 0.95));
+    face.style.setProperty('--flap', flap.toFixed(4));
+    face.style.setProperty('--drop', smooth(span(p, 0.78, 0.95)).toFixed(4));
+    face.classList.toggle('flap-open', flap > 0.5);
+    // inside: small and low in the envelope; risen: up out of the pocket; settled: in place
+    const ly = (1 - rise) * 6 - rise * (1 - settle) * 30;
+    const ls = 0.44 + rise * 0.32 + settle * 0.24;
+    letter.style.setProperty('--ly', `${ly.toFixed(2)}%`);
+    letter.style.setProperty('--ls', ls.toFixed(4));
+    for (const { el, at } of stickers) {
+      el.style.setProperty('--s', at === 0 ? 1 : back(span(p, 0.84 + (at - 1) * 0.022, 0.9 + (at - 1) * 0.022)).toFixed(4));
+    }
+  }
   const update = () => {
     const H = contact.offsetHeight, W = contact.offsetWidth;
     const footTop = innerHeight - H;
     const t = Math.min(Math.max(page.getBoundingClientRect().bottom - footTop, 0), H);   // edge, in footer px
     const shown = t < H - 1;
     contact.classList.toggle('is-shown', shown);
+    contact.querySelector('.contact__face').style.setProperty('--lift', `${(t / 2).toFixed(1)}px`);
     if (shown) {
       const r = Math.min(R, t);
       contact.style.clipPath = t <= 0 ? 'none'
         : `path('M0 ${t - r} A${r} ${r} 0 0 0 ${r} ${t} L${W - r} ${t} A${r} ${r} 0 0 0 ${W} ${t - r} L${W} ${H} L0 ${H} Z')`;
     }
     fluid?.setActive(shown);
-    // "Let's [face] Talk" comes together once a good part of the footer is uncovered
-    if (!contact.classList.contains('is-in') && H - t > innerHeight * 0.35) {
+    document.body.classList.toggle('on-paper', t < navH());   // the paper is under the nav
+    envelope(reduce ? 1 : 1 - t / H);
+    // "Let's ... Talk" comes in once the collage has settled
+    if (!contact.classList.contains('is-in') && (reduce || 1 - t / H > 0.86)) {
       contact.classList.add('is-in');
       contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
     }

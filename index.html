@@ -339,6 +339,20 @@
         <feBlend in="soft" in2="SourceGraphic" mode="overlay" result="grained" />
         <feComposite in="grained" in2="SourceGraphic" operator="in" />
       </filter>
+      <!-- black-and-yellow duotone for the cut-out eye -->
+      <filter id="eye-duo" color-interpolation-filters="sRGB">
+        <feColorMatrix type="saturate" values="0" />
+        <feComponentTransfer>
+          <feFuncR type="linear" slope="2.8" intercept="-0.85" />
+          <feFuncG type="linear" slope="2.8" intercept="-0.85" />
+          <feFuncB type="linear" slope="2.8" intercept="-0.85" />
+        </feComponentTransfer>
+        <feComponentTransfer>
+          <feFuncR type="table" tableValues="0.04 1" />
+          <feFuncG type="table" tableValues="0.03 0.82" />
+          <feFuncB type="table" tableValues="0.02 0.06" />
+        </feComponentTransfer>
+      </filter>
     </svg>
     <p class="contact__label contact__kicker mono"><i class="dot"></i><span data-scramble>Liked my work?</span></p>
 
@@ -346,19 +360,29 @@
     <div class="contact__stage" aria-hidden="true">
       <span class="contact__word contact__word--l">Let’s</span>
       <figure class="contact__face">
-        <!-- the face (second frame on hover / tap) with a scrapbook of cutouts around it; each
-             cutout drifts with the pointer at its own depth (--d) and pops when hovered -->
-        <span class="el el--burst" style="--d:-14"><img src="assets/collage/burst.webp" alt="" draggable="false" /></span>
-        <img class="contact__face-base" src="assets/face.webp" alt="" width="380" height="480" onerror="this.closest('.contact__face').classList.add('is-missing')" />
-        <img class="contact__face-alt" src="assets/face-hover.webp" alt="" width="380" height="480" />
-        <span class="el el--puzzle" style="--d:-8"><img src="assets/collage/puzzle.webp" alt="" draggable="false" /></span>
-        <span class="el el--tape" style="--d:18"><img src="assets/collage/tape.webp" alt="" draggable="false" /></span>
-        <span class="el el--star" style="--d:26"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
-        <span class="el el--bubble" style="--d:22"><img src="assets/collage/bubble.webp" alt="" draggable="false" /><b>say hi!</b></span>
-        <span class="el el--mouth" style="--d:30"><img src="assets/collage/mouth.webp" alt="" draggable="false" /></span>
-        <span class="el el--arrow" style="--d:36"><img src="assets/collage/arrow.png" alt="" draggable="false" /></span>
-        <span class="el el--hand" style="--d:40"><img src="assets/collage/hand.png" alt="" draggable="false" /></span>
-        <div class="contact__face-ph"></div>
+        <!-- a sealed envelope that opens as the footer is uncovered: the collage rises out of it,
+             the envelope drops away and the stickers land (all driven by scroll, main.js) -->
+        <div class="env env__back"></div>
+        <div class="letter">
+          <span class="paper paper--blue1"></span>
+          <span class="paper paper--blue2"></span>
+          <span class="paper paper--sheet"><i>Trades sketching · No. 27</i></span>
+          <span class="el el--clip" style="--d:14;--at:0"><svg viewBox="0 0 100 74"><defs><linearGradient id="clipg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#f6f7f9" /><stop offset=".45" stop-color="#b3b7bf" /><stop offset=".7" stop-color="#e8eaee" /><stop offset="1" stop-color="#8d929b" /></linearGradient></defs><path d="M30 34V10a8 8 0 0 1 16 0v24M54 34V10a8 8 0 0 1 16 0v24" fill="none" stroke="#c4c8ce" stroke-width="4" stroke-linecap="round" /><path d="M14 34h72l8 30a6 6 0 0 1-6 8H12a6 6 0 0 1-6-8z" fill="url(#clipg)" stroke="#7d828b" stroke-width="1.5" /><path d="M16 40h68" stroke="#fff" stroke-opacity=".7" stroke-width="2" /></svg></span>
+          <span class="el el--burst" style="--d:-12;--at:0"><img src="assets/collage/burst.webp" alt="" draggable="false" /></span>
+          <img class="contact__face-base" src="assets/face.webp" alt="" width="380" height="480" onerror="this.closest('.contact__face').classList.add('is-missing')" />
+          <img class="contact__face-alt" src="assets/face-hover.webp" alt="" width="380" height="480" />
+          <span class="el el--eye" style="--d:22;--at:1;--fl:13;--ft:41;--fw:36;--fh:15"><img src="assets/face.webp" alt="" draggable="false" /></span>
+          <span class="el el--puzzle" style="--d:26;--at:2"><img src="assets/collage/puzzle.webp" alt="" draggable="false" /></span>
+          <span class="el el--mouth" style="--d:30;--at:3"><img src="assets/collage/mouth.webp" alt="" draggable="false" /></span>
+          <span class="el el--star1" style="--d:34;--at:4"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
+          <span class="el el--star2" style="--d:20;--at:5"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
+          <span class="el el--star3" style="--d:28;--at:6"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
+          <span class="el el--silver" style="--d:18;--at:6"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
+          <span class="el el--arrow" style="--d:40;--at:7"><img src="assets/collage/arrow.png" alt="" draggable="false" /></span>
+          <div class="contact__face-ph"></div>
+        </div>
+        <div class="env env__pocket"><p class="env__note"><span>To: you</span><b>Let’s talk</b><span>From: Saksham, Bangalore</span></p></div>
+        <div class="env env__flap"><div class="env__flap-in"><img class="env__seal" src="assets/collage/star.webp" alt="" /></div></div>
       </figure>
       <span class="contact__word contact__word--r">Talk</span>
     </div>
