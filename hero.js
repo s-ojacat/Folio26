@@ -34,7 +34,7 @@ const TUBE = 0.22;
 const SLANT = new THREE.Matrix4().makeShear(0.12, 0, 0, 0, 0, 0);
 
 /* ───────── Shaders ───────── */
-const QUAD_VERT = /* glsl */`
+export const QUAD_VERT = /* glsl */`
 varying vec2 vUv;
 void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
@@ -116,7 +116,7 @@ void main() {
   gl_FragColor = c;
 }`;
 
-const SPLAT_FRAG = /* glsl */`
+export const SPLAT_FRAG = /* glsl */`
 uniform sampler2D uVel; uniform vec2 uPoint; uniform vec2 uForce; uniform float uRadius; uniform float uAspect;
 varying vec2 vUv;
 void main() {
@@ -125,7 +125,7 @@ void main() {
   gl_FragColor = vec4(v, 0.0, 1.0);
 }`;
 
-const DIVERGENCE_FRAG = /* glsl */`
+export const DIVERGENCE_FRAG = /* glsl */`
 uniform sampler2D uVel; uniform vec2 uTexel;
 varying vec2 vUv;
 void main() {
@@ -136,7 +136,7 @@ void main() {
   gl_FragColor = vec4(0.5 * (r - l + t - b), 0.0, 0.0, 1.0);
 }`;
 
-const PRESSURE_FRAG = /* glsl */`
+export const PRESSURE_FRAG = /* glsl */`
 uniform sampler2D uPressure; uniform sampler2D uDiv; uniform vec2 uTexel;
 varying vec2 vUv;
 void main() {
@@ -147,7 +147,7 @@ void main() {
   gl_FragColor = vec4((l + r + b + t - texture2D(uDiv, vUv).x) * 0.25, 0.0, 0.0, 1.0);
 }`;
 
-const GRADIENT_FRAG = /* glsl */`
+export const GRADIENT_FRAG = /* glsl */`
 uniform sampler2D uPressure; uniform sampler2D uVel; uniform vec2 uTexel;
 varying vec2 vUv;
 void main() {
@@ -158,7 +158,7 @@ void main() {
   gl_FragColor = vec4(texture2D(uVel, vUv).xy - 0.5 * vec2(r - l, t - b), 0.0, 1.0);
 }`;
 
-const ADVECT_FRAG = /* glsl */`
+export const ADVECT_FRAG = /* glsl */`
 uniform sampler2D uVel; uniform vec2 uTexel; uniform float uDt; uniform float uDissipation;
 varying vec2 vUv;
 void main() {
@@ -166,7 +166,7 @@ void main() {
   gl_FragColor = vec4(texture2D(uVel, coord).xy / (1.0 + uDissipation * uDt), 0.0, 1.0);
 }`;
 
-const SCALE_FRAG = /* glsl */`
+export const SCALE_FRAG = /* glsl */`
 uniform sampler2D uTex; uniform float uScale;
 varying vec2 vUv;
 void main() { gl_FragColor = texture2D(uTex, vUv) * uScale; }`;

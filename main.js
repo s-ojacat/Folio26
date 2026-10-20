@@ -1,4 +1,5 @@
 import { startHero } from './hero.js';
+import { startFooterFluid } from './footer-fluid.js';
 
 const canvas = document.querySelector('.hero__gl');
 const hero = document.querySelector('.hero');
@@ -293,3 +294,12 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(pr
   });
   contact.addEventListener('pointerleave', () => { stage.style.setProperty('--mx', 0); stage.style.setProperty('--my', 0); });
 }
+
+// touch screens have no hover, so a tap flips between the two frames of the face
+const face = contact.querySelector('.contact__face');
+if (!matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  face.addEventListener('click', () => face.classList.toggle('is-alt'));
+}
+
+/* ───────── Contact: slowly flowing folds, stirred by the pointer like the hero ───────── */
+startFooterFluid({ host: contact.querySelector('.contact__bg'), events: contact });

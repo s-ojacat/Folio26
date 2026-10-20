@@ -616,6 +616,9 @@ a:focus-visible, button:focus-visible { outline: none; }
   filter: blur(34px) saturate(1.1);
   animation: folds 26s var(--ease-in-out) infinite alternate;
 }
+/* the WebGL folds (footer-fluid.js) replace the CSS ones once they're running */
+.contact__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.contact__bg.has-gl::before { display: none; }
 /* fine film grain over the gradient */
 .contact__bg::after {
   content: ""; position: absolute; inset: 0;
@@ -652,7 +655,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 .contact__word--r { transform: translateX(24%); }
 .contact__face {
   position: relative; z-index: 1; flex: none; margin: 0;
-  height: min(100cqh, 46vw); aspect-ratio: 757 / 1093;   /* the cutout's own shape */
+  height: min(100cqh, 52vw); aspect-ratio: 380 / 480;   /* the cutout's own shape */
   translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
   transform: translateY(10%) scale(.94); opacity: 0;
   transition: transform 1.3s var(--ease-expo) .08s, opacity 1.3s var(--ease-expo) .08s, translate .7s var(--ease-out);
@@ -665,60 +668,14 @@ a:focus-visible, button:focus-visible { outline: none; }
   filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 24px 48px rgba(20, 0, 30, .55));
 }
 
-/* every piece rides the pointer at its own depth and pops on hover */
-.contact__face .frag, .contact__face .shape {
-  position: absolute;
-  translate: calc(var(--mx) * var(--d) * 1px) calc(var(--my) * var(--d) * .8px);
-  transition: translate .9s var(--ease-out), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
+/* hover (or tap) shows the second frame */
+.contact__face-alt {
+  position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%;
+  opacity: 0; transition: opacity .12s linear;
+  filter: url(#face-grain) contrast(1.06) saturate(.94) drop-shadow(0 24px 48px rgba(20, 0, 30, .55));
 }
-@media (hover: hover) and (pointer: fine) {
-  .contact__face .frag:hover, .contact__face .shape:hover { scale: 1.08; rotate: 5deg; }
-  .contact__face .frag:nth-of-type(even):hover, .contact__face .shape:nth-of-type(even):hover { rotate: -6deg; }
-}
-
-/* a re-cut piece of the face: a window (--l --t --w --h, % of the face) holding a copy of the
-   image lined up with the base, then moved off its spot by its own transform */
-.frag {
-  z-index: 2; overflow: hidden;
-  left: calc(var(--l) * 1%); top: calc(var(--t) * 1%);
-  width: calc(var(--w) * 1%); height: calc(var(--h) * 1%);
-  box-shadow: 0 10px 22px rgba(10, 0, 20, .35);
-}
-.frag img {
-  position: absolute; max-width: none;
-  width: calc(100% * 100 / var(--w)); height: calc(100% * 100 / var(--h));
-  left: calc(-100% * var(--l) / var(--w)); top: calc(-100% * var(--t) / var(--h));
-  filter: url(#face-grain);
-}
-/* hair and forehead, as a coarse black halftone on newsprint */
-.frag--halftone { transform: translate(-16%, -8%) rotate(-4deg); background: #efe7d6; }
-.frag--halftone img { filter: grayscale(1) contrast(2.4) brightness(.92); mix-blend-mode: multiply; }
-.frag--halftone::after {
-  content: ""; position: absolute; inset: 0;
-  background: radial-gradient(circle, transparent 0 44%, #efe7d6 52%) 0 0 / 7px 7px;
-}
-/* the crown, printed black on red */
-.frag--red { transform: translate(26%, -14%) rotate(7deg); background: #e5231b; }
-.frag--red img { filter: grayscale(1) contrast(2.2) brightness(.9); mix-blend-mode: multiply; }
-/* the left cheek, slid down onto a yellow block */
-.frag--cheek { transform: translate(-22%, 12%) rotate(-3deg); box-shadow: none; }
-/* the right eye, zoomed and knocked askew */
-.frag--eye { transform: translate(8%, 6%) rotate(-6deg); }
-.frag--eye img { scale: 1.16; transform-origin: calc((var(--l) + var(--w) / 2) * 1%) calc((var(--t) + var(--h) / 2) * 1%); }
-/* the lips, nudged right */
-.frag--lips { transform: translate(16%, 6%) rotate(5deg); }
-
-/* primary shapes, in % of the face box (they can run past its edges) */
-.shape { z-index: 0; pointer-events: auto; }
-.shape--line { left: -70%; right: -70%; top: 47%; height: 3px; background: #0d0d0d; }
-.shape--circle { left: -36%; top: 40%; width: 54%; aspect-ratio: 1; border-radius: 50%; background: #1f5bd8; }
-.shape--bar { left: 70%; top: 18%; width: 56%; height: 14%; background: #ffc414; }
-.shape--ring { left: 84%; top: 26%; width: 40%; aspect-ratio: 1; border-radius: 50%; border: 2px solid #e5231b; }
-.shape--tri-b { left: 76%; top: -10%; width: 36%; height: 18%; background: #1f5bd8; clip-path: polygon(0 50%, 100% 0, 100% 100%); }
-.shape--yellow { left: -12%; top: 66%; width: 28%; height: 32%; background: #ffc414; z-index: 1; }
-.shape--tri-r { z-index: 3; left: 66%; top: 70%; width: 26%; height: 20%; background: #e5231b; clip-path: polygon(0 0, 100% 50%, 0 100%); }
-.shape--dot-r { z-index: 3; left: -8%; top: 90%; width: 7%; aspect-ratio: 1; border-radius: 50%; background: #e5231b; }
-.shape--dot-b { z-index: 3; left: 74%; top: 63%; width: 5%; aspect-ratio: 1; border-radius: 50%; background: #1f5bd8; }
+@media (hover: hover) and (pointer: fine) { .contact__face:hover .contact__face-alt { opacity: 1; } }
+.contact__face.is-alt .contact__face-alt { opacity: 1; }
 
 /* if the cutout fails to load, fall back to the dotted silhouette alone */
 .contact__face-ph { display: none; }
@@ -771,7 +728,7 @@ a:focus-visible, button:focus-visible { outline: none; }
   .wl-meta, .wl-side { padding-top: 0; }
   .hover-reveal, .view-cta { display: none; }
   .contact__stage { gap: 0; }
-  .contact__face { height: min(100cqh, 80vw); margin: 0 -7vw; }
+  .contact__face { height: min(100cqh, 72vw); margin: 0 -5vw; }
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }
   .contact__base .cell--3 { grid-column: 2; grid-row: 1; }
