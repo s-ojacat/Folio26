@@ -66,7 +66,9 @@ scrambleEls.forEach((el) => {
     if (!target) return;
     e.preventDefault();
     const navH = document.querySelector('.bar--top')?.offsetHeight || 0;
-    const y = id === 'top' ? 0 : target.getBoundingClientRect().top + scrollY - navH;
+    // the footer is fixed behind the page, so 'Contact' means: scroll to the very end
+    const y = id === 'top' ? 0 : id === 'contact' ? document.documentElement.scrollHeight - innerHeight
+      : target.getBoundingClientRect().top + scrollY - navH;
     glideTo(Math.max(0, y));
     history.pushState(null, '', `#${id}`);
   });
@@ -276,12 +278,6 @@ new IntersectionObserver(([e], io) => {
 
 /* ───────── Contact: "Let's [face] Talk" comes together once, on the way in ───────── */
 const contact = document.querySelector('.contact');
-new IntersectionObserver(([e], io) => {
-  if (!e.isIntersecting) return;
-  contact.classList.add('is-in');
-  contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
-  io.disconnect();
-}, { threshold: 0.2 }).observe(contact);
 
 
 // the face drifts a little with the pointer, like the About collage
@@ -302,4 +298,35 @@ if (!matchMedia('(hover: hover) and (pointer: fine)').matches) {
 }
 
 /* ───────── Contact: slowly flowing folds, stirred by the pointer like the hero ───────── */
-startFooterFluid({ host: contact.querySelector('.contact__bg'), events: contact });
+const fluid = startFooterFluid({ host: contact.querySelector('.contact__bg'), events: contact });
+
+/* ───────── Contact: revealed from under the page ─────────
+   The footer is fixed to the bottom of the screen; the page above scrolls up off it over a
+   spacer of the same height. It is clipped to the area below the page's bottom edge, with
+   that edge's two bottom corners rounded, so the page reads as a sheet lifting away. */
+{
+  const page = document.querySelector('main');
+  const R = 44;   // corner radius of the lifting edge
+  const update = () => {
+    const H = contact.offsetHeight, W = contact.offsetWidth;
+    const footTop = innerHeight - H;
+    const t = Math.min(Math.max(page.getBoundingClientRect().bottom - footTop, 0), H);   // edge, in footer px
+    const shown = t < H - 1;
+    contact.classList.toggle('is-shown', shown);
+    if (shown) {
+      const r = Math.min(R, t);
+      contact.style.clipPath = t <= 0 ? 'none'
+        : `path('M0 ${t - r} A${r} ${r} 0 0 0 ${r} ${t} L${W - r} ${t} A${r} ${r} 0 0 0 ${W} ${t - r} L${W} ${H} L0 ${H} Z')`;
+    }
+    fluid?.setActive(shown);
+    // "Let's [face] Talk" comes together once a good part of the footer is uncovered
+    if (!contact.classList.contains('is-in') && H - t > innerHeight * 0.35) {
+      contact.classList.add('is-in');
+      contact.querySelectorAll('[data-scramble]').forEach((el) => scramble(el, 650));
+    }
+  };
+  // scroll events already arrive at most once a frame, so update straight from them
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  update();
+}

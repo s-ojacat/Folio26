@@ -65,7 +65,7 @@ export function startFooterFluid({ host, events }) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'low-power' });
-  } catch { return; }   // no WebGL: the CSS gradient stays
+  } catch { return null; }   // no WebGL: the CSS gradient stays
   host.prepend(canvas);
   host.classList.add('has-gl');
   // the folds are soft, so a reduced buffer is plenty and keeps this cheap
@@ -168,7 +168,7 @@ export function startFooterFluid({ host, events }) {
 
   // static for reduced motion; otherwise animate only while the footer is on screen
   const T0 = 40;   // start mid-drift rather than from the noise's origin
-  if (reduceMotion) { render(T0, 0); return; }
+  if (reduceMotion) { render(T0, 0); return { setActive() {} }; }
   const clock = new THREE.Clock(false);
   let raf = 0, time = T0;
   const loop = () => {
@@ -177,9 +177,12 @@ export function startFooterFluid({ host, events }) {
     time += dt;
     render(time, dt);
   };
-  new IntersectionObserver(([e]) => {
-    if (e.isIntersecting && !raf) { clock.start(); loop(); }
-    else if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = 0; clock.stop(); }
-  }).observe(host);
   render(time, 0);
+  // the page tells us when the footer is uncovered; animate only then
+  return {
+    setActive(on) {
+      if (on && !raf) { clock.start(); loop(); }
+      else if (!on && raf) { cancelAnimationFrame(raf); raf = 0; clock.stop(); }
+    },
+  };
 }

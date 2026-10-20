@@ -589,19 +589,21 @@ a:focus-visible, button:focus-visible { outline: none; }
    rebuilt here as soft gradients that drift slowly; the top fades in from the page colour. */
 .contact {
   --plum: #2c0420;
-  position: relative; z-index: 1; isolation: isolate; overflow: hidden;
+  /* fixed behind the page and uncovered as it scrolls away (main.js clips it to the area
+     below the page's bottom edge); hidden until the edge reaches it */
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; isolation: isolate; overflow: hidden;
+  visibility: hidden; clip-path: inset(100% 0 0 0);
   color: rgba(255, 255, 255, .78);
   padding-top: calc(var(--nav-h) + 4px);   /* clears the fixed bar when scrolled to the end */
   height: 100vh; height: 100svh; min-height: 520px;
   display: flex; flex-direction: column;
 }
-/* the plum and its folds fade in from fully clear at the top, so the work section's own
-   backdrop runs straight into the footer with no edge */
+.contact.is-shown { visibility: visible; }
+.contact-spacer { height: 100vh; height: 100svh; min-height: 520px; }
+/* the plum and its folds */
 .contact__bg {
   position: absolute; z-index: -1; inset: 0; overflow: hidden;
   background: var(--plum);
-  -webkit-mask: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, .35) 16%, #000 42%);
-          mask: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, .35) 16%, #000 42%);
 }
 .contact__bg::before {
   content: ""; position: absolute; inset: -20%;
