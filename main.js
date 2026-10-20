@@ -123,6 +123,14 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
   const map = (v, a, b, c, d) => c + ((v - a) * (d - c)) / (b - a);
   const anim = { tx: 0, ty: 0, rot: 0, bri: 1 };
 
+  // rows with a case study get a "View project" pill that stands in for the cursor
+  const cta = document.createElement('div');
+  cta.className = 'view-cta mono';
+  cta.setAttribute('aria-hidden', 'true');
+  cta.innerHTML = '<span class="view-cta__dot">↗</span><span class="view-cta__label">View project</span>';
+  document.body.appendChild(cta);
+  const ctaPos = { x: 0, y: 0 };
+
   document.querySelectorAll('.wl-row').forEach((row) => {
     const tpl = row.querySelector('template.wl-cover');
     if (!tpl) return;
@@ -133,6 +141,7 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     reveal.querySelector('.hover-reveal__img').appendChild(tpl.content.cloneNode(true));
     row.appendChild(reveal);
 
+    const linked = row.querySelector('.wl-link.is-linked');
     let raf = null, first = true, area = 'down';
     const render = () => {
       const b = row.getBoundingClientRect();
@@ -153,17 +162,27 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       }
       reveal.style.transform = `translate(${anim.tx.toFixed(2)}px, ${anim.ty.toFixed(2)}px) rotate(${anim.rot.toFixed(2)}deg)`;
       reveal.style.filter = `brightness(${anim.bri.toFixed(3)})`;
+      if (linked) {
+        ctaPos.x = lerp(ctaPos.x, mouse.x, still ? 1 : 0.35); ctaPos.y = lerp(ctaPos.y, mouse.y, still ? 1 : 0.35);
+        cta.style.transform = `translate(${ctaPos.x.toFixed(1)}px, ${ctaPos.y.toFixed(1)}px)`;
+      }
       raf = requestAnimationFrame(render);
     };
     const enter = () => {
       first = true; prev = { x: mouse.x, y: mouse.y };
       row.classList.add('is-hover');
       reveal.classList.add('is-on');
+      if (linked) {
+        Object.assign(ctaPos, mouse);
+        cta.style.transform = `translate(${mouse.x}px, ${mouse.y}px)`;
+        cta.classList.add('is-on');
+      }
       if (!raf) raf = requestAnimationFrame(render);
     };
     const leave = () => {
       row.classList.remove('is-hover');
       reveal.classList.remove('is-on');
+      if (linked) cta.classList.remove('is-on');
       cancelAnimationFrame(raf); raf = null;
     };
     row.addEventListener('mouseenter', enter);
@@ -276,3 +295,14 @@ copyBtn.addEventListener('click', async () => {
   clearTimeout(copyBtn._t);
   copyBtn._t = setTimeout(() => { copyBtn.textContent = 'Copy email'; copyBtn.classList.remove('is-done'); }, 1800);
 });
+
+// the face drifts a little with the pointer, like the About collage
+const stage = contact.querySelector('.contact__stage');
+if (matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  contact.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    stage.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
+    stage.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
+  });
+  contact.addEventListener('pointerleave', () => { stage.style.setProperty('--mx', 0); stage.style.setProperty('--my', 0); });
+}

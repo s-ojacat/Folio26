@@ -388,6 +388,38 @@ a:focus-visible, button:focus-visible { outline: none; }
 .hover-reveal.is-on .hover-reveal__img { transform: scale(1); transition-duration: .6s; }
 .hover-reveal .cover { width: 100%; height: 100%; border: 0; }
 
+/* "View project" pill: follows the cursor over rows that open a case study (main.js).
+   The round ↗ sits on the cursor point; the label trails to its right. */
+.view-cta {
+  position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+  will-change: transform;
+}
+.view-cta__dot, .view-cta__label {
+  transition: opacity .25s var(--ease-out), transform .35s var(--ease-expo);
+  opacity: 0;
+}
+.view-cta__dot {
+  display: grid; place-items: center; flex: none;
+  width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+  background: rgba(15, 17, 17, .55); color: var(--fg); font-size: 14px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+  transform: scale(.4);
+}
+.view-cta__label {
+  margin-top: -22px; padding: 0 14px; height: 44px; line-height: 44px; border-radius: 6px;
+  background: rgba(15, 17, 17, .55); color: var(--fg); font-size: 12px; letter-spacing: .1em;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+  transform: translateX(-8px);
+}
+.view-cta.is-on .view-cta__dot, .view-cta.is-on .view-cta__label { opacity: 1; transform: none; }
+.view-cta.is-on .view-cta__label { transition-delay: .05s; }
+@media (hover: hover) and (pointer: fine) {
+  .wl-link.is-linked { cursor: none; }
+}
+
 /* buttons: quiet outline, fill on hover, press feedback */
 .btn {
   align-self: flex-start; display: inline-flex; align-items: center; gap: 10px;
@@ -470,17 +502,42 @@ a:focus-visible, button:focus-visible { outline: none; }
 .contact__kicker { display: flex; align-items: center; gap: 12px; margin: 0; font-size: clamp(11px, .8vw, 13px); letter-spacing: .14em; }
 .contact__note { margin: 0; max-width: 26em; color: var(--fg-dim); text-transform: none; letter-spacing: 0; font-size: clamp(12px, .95vw, 16px); line-height: 1.75; }
 
-.contact__head {
-  margin: clamp(28px, 3vw, 52px) 0 0; padding: 0 var(--pad);
-  display: flex; flex-direction: column;
-  font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
-  text-transform: uppercase; line-height: .92; letter-spacing: -0.01em;
-  font-size: clamp(28px, 8.4vw, 168px);
+/* "LET'S [face] TALK": the words sit behind the cutout, which overlaps their inner ends a little.
+   On the way in (main.js adds .is-in) the words slide toward the face and the face rises. */
+.contact__stage {
+  --mx: 0; --my: 0;   /* pointer, -1..1 (main.js) */
+  position: relative;
+  display: flex; justify-content: center; align-items: center;
+  margin-top: clamp(24px, 3vw, 56px); padding: 0 var(--pad);
 }
-.contact__head em { font-style: normal; color: var(--accent); }
-/* lines rise in when the footer scrolls into view (main.js), not on page load */
-.contact .w > span { transform: translateY(105%); }
-.contact.is-in .w > span { transform: none; }
+.contact__word {
+  position: relative; z-index: 1;
+  font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
+  text-transform: uppercase; line-height: .9; letter-spacing: -0.01em;
+  font-size: clamp(30px, 9.6vw, 196px);
+  transition: transform 1.2s var(--ease-expo), opacity 1.2s var(--ease-expo);
+  opacity: 0;
+}
+.contact__word--l { transform: translateX(-12%); }
+.contact__word--r { transform: translateX(12%); }
+.contact__face {
+  position: relative; z-index: 2; flex: none;
+  width: clamp(120px, 24vw, 460px); aspect-ratio: 4 / 5;
+  margin: 0 calc(clamp(120px, 24vw, 460px) * -0.12);
+  translate: calc(var(--mx) * 10px) calc(var(--my) * 8px);
+  transform: translateY(14%) scale(.92); opacity: 0;
+  transition: transform 1.3s var(--ease-expo) .08s, opacity 1.3s var(--ease-expo) .08s, translate .7s var(--ease-out);
+}
+.contact.is-in .contact__word, .contact.is-in .contact__face { transform: none; opacity: 1; }
+.contact__face img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: grayscale(1) contrast(1.15); }
+/* stand-in: a head-and-shoulders silhouette in the About section's halftone dots */
+.contact__face-ph {
+  width: 100%; height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .8) 0 36%, transparent 40%) 0 0 / 9px 9px;
+  opacity: .55;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Cellipse cx='200' cy='175' rx='98' ry='122'/%3E%3Cpath d='M200 300c-60 0-92 12-130 40C26 372 6 420 0 500h400c-6-80-26-128-70-160-38-28-70-40-130-40z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 
 .contact__mail {
   display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px;
@@ -538,7 +595,7 @@ a:focus-visible, button:focus-visible { outline: none; }
   .cell, .cell--1, .cell--2, .cell--3, .cell--23 { grid-column: 1; padding-left: var(--pad); padding-right: var(--pad); }
   .wl-link { row-gap: 12px; }
   .wl-meta, .wl-side { padding-top: 0; }
-  .hover-reveal { display: none; }
+  .hover-reveal, .view-cta { display: none; }
   .contact__top, .contact__social { grid-template-columns: 1fr; }
   .contact__top { row-gap: 16px; }
   .contact__social li + li a { border-top: 1px solid var(--line); }
@@ -557,7 +614,7 @@ a:focus-visible, button:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   .marquee__track { animation: none; }
   .w > span, .about [data-reveal] { transition: none; }
-  .contact .w > span { transform: none; }
+  .contact__word, .contact__face { transition: none; transform: none; opacity: 1; }
   .hover-reveal__inner, .hover-reveal__img { transition: none; }
   .about__media { transform: none; }
 }
