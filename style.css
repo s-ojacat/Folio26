@@ -677,6 +677,36 @@ a:focus-visible, button:focus-visible { outline: none; }
 @media (hover: hover) and (pointer: fine) { .contact__face:hover .contact__face-alt { opacity: 1; } }
 .contact__face.is-alt .contact__face-alt { opacity: 1; }
 
+/* scrapbook cutouts around the face, placed in % of the face box (they can run past it).
+   Each rides the pointer at its own depth (--d) and pops when hovered. */
+.contact__face .el {
+  position: absolute; z-index: 3; display: block;
+  left: var(--x); top: var(--y); width: var(--w);
+  rotate: var(--r, 0deg);
+  translate: calc(var(--mx) * var(--d) * 1px) calc(var(--my) * var(--d) * .8px);
+  filter: drop-shadow(0 10px 16px rgba(12, 0, 24, .45));
+  transition: translate .9s var(--ease-out), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
+}
+.contact__face .el img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+@media (hover: hover) and (pointer: fine) {
+  .contact__face .el:hover { scale: 1.1; rotate: calc(var(--r, 0deg) + 7deg); }
+  .contact__face .el:nth-of-type(even):hover { rotate: calc(var(--r, 0deg) - 8deg); }
+}
+.el--burst  { --x: -26%; --y: -12%; --w: 52%; --r: -8deg; z-index: 0 !important; filter: none !important; }
+.el--tape   { --x: -4%;  --y: 4%;   --w: 46%; --r: -32deg; }
+.el--bubble { --x: 70%;  --y: -8%;  --w: 50%; --r: 7deg; }
+.el--bubble b {
+  position: absolute; left: 0; right: 0; top: 36%; text-align: center;
+  font-family: var(--display); font-weight: 800; font-stretch: 125%; font-variation-settings: "wdth" 125;
+  text-transform: uppercase; color: #2a1d05; font-size: clamp(10px, 1.25vw, 22px); letter-spacing: -.01em;
+}
+.el--star   { --x: 88%;  --y: 24%;  --w: 22%; --r: 14deg; }
+.el--puzzle { --x: -34%; --y: 60%;  --w: 38%; --r: -16deg; }
+.el--mouth  { --x: 72%;  --y: 62%;  --w: 38%; --r: 9deg; }
+.el--arrow  { --x: 8%;   --y: 80%;  --w: 12%; --r: -10deg; filter: drop-shadow(0 6px 10px rgba(12, 0, 24, .5)); }
+.el--arrow img, .el--hand img { image-rendering: pixelated; }
+.el--hand   { --x: 92%;  --y: 92%;  --w: 15%; --r: 8deg; }
+
 /* if the cutout fails to load, fall back to the dotted silhouette alone */
 .contact__face-ph { display: none; }
 .contact__face.is-missing > :not(.contact__face-ph) { display: none; }

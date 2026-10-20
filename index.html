@@ -343,9 +343,18 @@
     <div class="contact__stage" aria-hidden="true">
       <span class="contact__word contact__word--l">Let’s</span>
       <figure class="contact__face">
-        <!-- two frames of the same cutout: the second shows on hover (tap on touch screens) -->
+        <!-- the face (second frame on hover / tap) with a scrapbook of cutouts around it; each
+             cutout drifts with the pointer at its own depth (--d) and pops when hovered -->
+        <span class="el el--burst" style="--d:-14"><img src="assets/collage/burst.webp" alt="" draggable="false" /></span>
         <img class="contact__face-base" src="assets/face.webp" alt="" width="380" height="480" onerror="this.closest('.contact__face').classList.add('is-missing')" />
         <img class="contact__face-alt" src="assets/face-hover.webp" alt="" width="380" height="480" />
+        <span class="el el--puzzle" style="--d:-8"><img src="assets/collage/puzzle.webp" alt="" draggable="false" /></span>
+        <span class="el el--tape" style="--d:18"><img src="assets/collage/tape.webp" alt="" draggable="false" /></span>
+        <span class="el el--star" style="--d:26"><img src="assets/collage/star.webp" alt="" draggable="false" /></span>
+        <span class="el el--bubble" style="--d:22"><img src="assets/collage/bubble.webp" alt="" draggable="false" /><b>say hi!</b></span>
+        <span class="el el--mouth" style="--d:30"><img src="assets/collage/mouth.webp" alt="" draggable="false" /></span>
+        <span class="el el--arrow" style="--d:36"><img src="assets/collage/arrow.png" alt="" draggable="false" /></span>
+        <span class="el el--hand" style="--d:40"><img src="assets/collage/hand.png" alt="" draggable="false" /></span>
         <div class="contact__face-ph"></div>
       </figure>
       <span class="contact__word contact__word--r">Talk</span>
