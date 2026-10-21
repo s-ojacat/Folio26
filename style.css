@@ -619,8 +619,6 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 .contact a:focus-visible { outline: 1.5px dotted currentColor; outline-offset: 4px; }
 
 .contact__label { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 11px; letter-spacing: .08em; }
-.contact__kicker { justify-content: center; margin: clamp(12px, 2vh, 28px) 0 0; font-size: 12px; letter-spacing: .12em; color: var(--ink); opacity: 0; transition: opacity .8s var(--ease-out); }
-.contact.is-in .contact__kicker { opacity: 1; }
 .contact__label .dot { width: 7px; height: 7px; background: #1fb866; opacity: 1; }
 
 /* "LET'S [collage] TALK": the words sit at either edge, the collage in the middle */
@@ -646,7 +644,7 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 .contact__face {
   --flap: 0; --drop: 0;   /* scroll-driven, 0..1 (main.js) */
   position: relative; z-index: 5; flex: none; margin: 0;   /* above the links while the envelope rides low */
-  height: min(68cqh, 34vw); aspect-ratio: 380 / 480;
+  height: min(90cqh, 47.6vw); aspect-ratio: 380 / 480;
   translate: calc(var(--mx) * 12px) calc(var(--my) * 9px);
   transition: translate .7s var(--ease-out);
 }
@@ -728,10 +726,10 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
   position: absolute; z-index: 3; display: block;
   left: var(--x); top: var(--y); width: var(--w);
   rotate: var(--r, 0deg);
-  translate: calc(var(--mx) * var(--d) * 1px) calc(var(--my) * var(--d) * .8px);
+  translate: calc(var(--mx) * var(--d) * 1px + var(--hx, 0px)) calc(var(--my) * var(--d) * .8px + var(--hy, 0px));
   transform: scale(var(--s, 1)); opacity: min(1, calc(var(--s, 1) * 3));
   filter: drop-shadow(0 8px 12px rgba(40, 30, 20, .3));
-  transition: translate .9s var(--ease-out), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
+  transition: translate .6s var(--ease-expo), scale .45s var(--ease-expo), rotate .45s var(--ease-expo);
 }
 .contact__face .el img, .contact__face .el svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 @media (hover: hover) and (pointer: fine) {
@@ -754,6 +752,36 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
 .el--arrow   { --x: 79.4%;  --y: 85.5%; --w: 15.5%; }
 .el--arrow img { image-rendering: pixelated; }
 .el--eye     { --x: 12.2%;  --y: 45.2%; --w: 31.6%; }
+
+/* ── hover: the stickers on the face push outwards (each along its own line from the face's
+   centre, --ox/--oy from main.js) and two colourful halos grow out of the silhouette ── */
+@media (hover: hover) and (pointer: fine) {
+  .contact__face:hover .el--push { --hx: var(--ox, 0px); --hy: var(--oy, 0px); }
+  .contact__face:hover .halo { opacity: 1; transform: scale(1); }
+}
+.contact__face.is-alt .el--push { --hx: var(--ox, 0px); --hy: var(--oy, 0px); }
+.contact__face.is-alt .halo { opacity: 1; transform: scale(1); }
+/* halos: a box 1.6× the face, holding the (hover) cutout's silhouette scaled up as a mask; the
+   goo filter on the outer box rounds that silhouette into a wobbly blob */
+.halo {
+  position: absolute; z-index: 1; inset: -30%; pointer-events: none;
+  opacity: 0; transform: scale(.86);
+  transition: opacity .35s var(--ease-out), transform .6s var(--ease-expo);
+}
+.halo i {
+  position: absolute; inset: 0;
+  -webkit-mask: url("assets/face-hover.webp") center / var(--m) auto no-repeat;
+          mask: url("assets/face-hover.webp") center / var(--m) auto no-repeat;
+}
+.halo--in { filter: url(#halo-goo-in); transition-delay: .05s; }
+.halo--in i { --m: 70%; background: linear-gradient(165deg, #b62ee0 0%, #f02c86 38%, #ff3d3d 64%, #ff8a3a 100%); }
+.halo--out { filter: url(#halo-goo-out); }
+.halo--out i {
+  --m: 82%;
+  background:
+    radial-gradient(circle, transparent 0 36%, rgba(18, 10, 30, .78) 44%) 0 0 / 7px 7px,
+    conic-gradient(from 40deg at 46% 52%, #ff2d55, #ff8a00, #ffe14d, #ff2d55, #2ad4ff, #3a4bff, #c02cff, #ff2d55);
+}
 
 /* if the face fails to load, fall back to the dotted silhouette alone */
 .contact__face-ph { display: none; }
@@ -807,7 +835,7 @@ body.on-paper .bar--top { --fg: var(--ink, #151515); color: #151515; }
   .hover-reveal, .view-cta { display: none; }
   /* phones: LET'S above the collage, TALK below it */
   .contact__stage { flex-direction: column; justify-content: center; gap: 2vh; }
-  .contact__face { height: min(54cqh, 62vw); }
+  .contact__face { height: min(66cqh, 74vw); }
   .contact__word--r { margin-top: 6cqh; }   /* clear of the sheets that hang below the face */
   .contact__base { grid-template-columns: 1fr 1fr; row-gap: 8px; font-size: 12px; }
   .contact__base .cell--2 { grid-column: 1 / -1; grid-row: 2; text-align: left; }

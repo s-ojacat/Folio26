@@ -367,6 +367,19 @@ const fluid = startFooterPaper({ host: contact.querySelector('.contact__bg'), ev
     for (const { el, late } of stickers) el.style.setProperty('--s', late ? back(span(p, 0.92, 0.985)).toFixed(4) : '1');
   }
   addEventListener('resize', () => envelope(lastP));
+  // hover: each sticker on the face is pushed outwards along its own line from the face's centre
+  function measurePush() {
+    const W = face.offsetWidth, H = face.offsetHeight, cxF = W * 0.5, cyF = H * 0.5;
+    for (const el of face.querySelectorAll('.el--push')) {
+      const dx = el.offsetLeft + el.offsetWidth / 2 - cxF, dy = el.offsetTop + el.offsetHeight / 2 - cyF;
+      const len = Math.hypot(dx, dy) || 1, push = W * 0.17;
+      el.style.setProperty('--ox', `${((dx / len) * push).toFixed(1)}px`);
+      // downward pushes are kept short so nothing slides over the links below
+      el.style.setProperty('--oy', `${Math.min((dy / len) * push, W * 0.05).toFixed(1)}px`);
+    }
+  }
+  measurePush();
+  new ResizeObserver(measurePush).observe(face);
 
 
   const update = () => {
